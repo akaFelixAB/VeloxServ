@@ -1,0 +1,26 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 21,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "default-debug",
+            "description": "Debug profile",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/debug/${presetName}",
+            "toolset": {
+                "value": "compiler=gcc",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "BUILD_SHARED_LIBS": "OFF",
+                "ENABLE_TESTING": "ON"
+            }
+        }
+    ]
+}
