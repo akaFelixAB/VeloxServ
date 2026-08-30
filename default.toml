@@ -1,0 +1,6 @@
+[server]
+env = "production" # Not supported yet
+host = "127.0.0.1"
+port = 8080
+timeout_seconds = 30
+max_connections = 10000
