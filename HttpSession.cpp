@@ -81,7 +81,3 @@ void VeloxServ::HttpSession::write_response() {
 void VeloxServ::HttpSession::do_close() {
     _socket.close();
 }
-
-VeloxServ::HttpSession::~HttpSession() {
-    do_close();
-}
