@@ -6,7 +6,7 @@ find_package(Boost REQUIRED COMPONENTS asio beast)
 find_package(nlohmann_json CONFIG REQUIRED)
 
 add_executable(VeloxServ main.cpp
-    HttpServ.cpp)
+    HttpSession.cpp)
 
 target_link_libraries(VeloxServ PRIVATE 
     Boost::asio 
