@@ -1,3 +1,6 @@
+### Editor config
+.vscode/
+
 ### Build dir ###
 build/
 
