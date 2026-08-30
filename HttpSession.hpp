@@ -47,17 +47,24 @@ public:
 
     inline void start() { read_request(); }
 
+    ~HttpSession() { do_close(); }
+
 private:
     // State machine for handling the HTTP session
 
     // Read the request from the client
+    void on_read(boost::system::error_code ec, std::size_t bytes_transferred);
     void read_request();
 
     // Process the request and generate a response
     void process_request();
 
     // Write the response back to the client
+    void on_write(boost::system::error_code ec, std::size_t bytes_transferred);
     void write_response();
+
+    // Close the connection
+    void do_close();
 }; // class HttpSession
 
 } // namespace VeloxServ

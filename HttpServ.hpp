@@ -32,7 +32,7 @@ using tcp = net::ip::tcp;
 // Route handler type: takes a request and returns a response
 using Handler = std::function<http::response<http::string_body>(const http::request<http::string_body>&)>;
 
-class HttpServ {
+class HttpServ : public std::enable_shared_from_this<HttpServ> {
     tcp::acceptor _acceptor;
     std::map<std::string, Handler> _routes;
 
@@ -44,11 +44,12 @@ public:
         _routes[path] = std::move(handler);
     }
 
-    void run() { do_accept(); }
+    void run() { accept_request(); }
 
 private:
     // Accept a new connection
-    void do_accept();
+    void on_accept(boost::system::error_code ec, tcp::socket socket);
+    void accept_request();
 }; // class HttpServ
 
 } // namespace VeloxServ

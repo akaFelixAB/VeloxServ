@@ -16,15 +16,20 @@
 
 #include "HttpSession.hpp"
 
+void VeloxServ::HttpSession::on_read(boost::system::error_code ec, std::size_t bytes_transferred) {
+    if (!ec) {
+        process_request();
+    }
+}
+
 void VeloxServ::HttpSession::read_request() {
     auto self = shared_from_this();
     http::async_read(
         _socket, _buffer, _request,
-        [self](boost::system::error_code ec, std::size_t bytes_transferred) {
-            if (!ec) {
-                self->process_request();
-            }
-        }
+        beast::bind_front_handler(
+            &HttpSession::on_read,
+            shared_from_this()
+        )
     );
 }
 
@@ -54,15 +59,29 @@ void VeloxServ::HttpSession::process_request() {
     write_response();
 }
 
+void VeloxServ::HttpSession::on_write(boost::system::error_code ec, std::size_t bytes_transferred) {
+    if (!ec) {
+        if (_response.keep_alive()) {
+            read_request();
+        }
+    }
+}
+
 void VeloxServ::HttpSession::write_response() {
     auto self = shared_from_this();
     http::async_write(
         _socket, _response,
-        [self](boost::system::error_code ec, std::size_t
-        ) {
-            if (!ec && self->_response.keep_alive()) {
-                self->read_request();
-            }
-        }
+        beast::bind_front_handler(
+            &HttpSession::on_write,
+            self
+        )
     );
+}
+
+void VeloxServ::HttpSession::do_close() {
+    _socket.close();
+}
+
+VeloxServ::HttpSession::~HttpSession() {
+    do_close();
 }

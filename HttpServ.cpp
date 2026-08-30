@@ -18,13 +18,18 @@
 
 #include "HttpSession.hpp"
 
-void VeloxServ::HttpServ::do_accept() {
+void VeloxServ::HttpServ::on_accept(boost::system::error_code ec, tcp::socket socket) {
+    if (!ec) {
+        std::make_shared<VeloxServ::HttpSession>(std::move(socket), _routes)->start();
+    }
+    accept_request();
+}
+
+void VeloxServ::HttpServ::accept_request() {
     _acceptor.async_accept(
-        [this](boost::system::error_code ec, tcp::socket socket) {
-        if (!ec) {
-            std::make_shared<VeloxServ::HttpSession>(std::move(socket), _routes)->start();
-        }
-        do_accept();
-        }
+        beast::bind_front_handler(
+            &HttpServ::on_accept,
+            shared_from_this()
+        )
     );
 }
