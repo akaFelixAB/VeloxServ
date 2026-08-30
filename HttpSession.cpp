@@ -35,7 +35,7 @@ void VeloxServ::HttpSession::process_request() {
     _response.keep_alive(_request.keep_alive());
 
     std::string path = std::string(_request.target());
-    auto it = _routes.find(path);
+    auto it = _routes.find(path); // Find the handler for the requested path
     if (it != _routes.end()) {
         try {
             _response = it->second(_request);
@@ -59,9 +59,10 @@ void VeloxServ::HttpSession::write_response() {
     http::async_write(
         _socket, _response,
         [self](boost::system::error_code ec, std::size_t
-    ) {
-        if (!ec && self->_response.keep_alive()) {
-            self->read_request();
+        ) {
+            if (!ec && self->_response.keep_alive()) {
+                self->read_request();
+            }
         }
-    });
+    );
 }
