@@ -32,7 +32,7 @@ using tcp = net::ip::tcp;
 // Route handler type: takes a request and returns a response
 using Handler = std::function<http::response<http::string_body>(const http::request<http::string_body>&)>;
 
-
+// Manages the lifetime of an HTTP session for a single connection
 class HttpSession : public std::enable_shared_from_this<HttpSession> {
     tcp::socket _socket;                            // Socket for the session
     http::request<http::string_body> _request;      // Request received from the client
@@ -47,10 +47,15 @@ public:
     inline void start() { read_request(); }
 
 private:
+    // State machine for handling the HTTP session
+
+    // Read the request from the client
     void read_request();
 
+    // Process the request and generate a response
     void process_request();
 
+    // Write the response back to the client
     void write_response();
 }; // class HttpSession
 

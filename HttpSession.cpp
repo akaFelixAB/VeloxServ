@@ -20,12 +20,12 @@ void VeloxServ::HttpSession::read_request() {
     auto self = shared_from_this();
     http::async_read(
         _socket, _buffer, _request,
-        [self](boost::system::error_code ec, std::size_t
-    ) {
-        if (!ec) {
-            self->process_request();
+        [self](boost::system::error_code ec, std::size_t bytes_transferred) {
+            if (!ec) {
+                self->process_request();
+            }
         }
-    });
+    );
 }
 
 void VeloxServ::HttpSession::process_request() {
