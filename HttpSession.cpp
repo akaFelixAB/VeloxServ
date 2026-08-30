@@ -29,8 +29,10 @@ void VeloxServ::HttpSession::read_request() {
 }
 
 void VeloxServ::HttpSession::process_request() {
+    _socket.expires_after(std::chrono::seconds(30));
+
     _response.version(_request.version());
-    _response.keep_alive(false);
+    _response.keep_alive(_request.keep_alive());
 
     std::string path = std::string(_request.target());
     auto it = _routes.find(path);
@@ -58,7 +60,7 @@ void VeloxServ::HttpSession::write_response() {
         _socket, _response,
         [self](boost::system::error_code ec, std::size_t
     ) {
-        if (!ec && self->_request.keep_alive()) {
+        if (!ec && self->_response.keep_alive()) {
             self->read_request();
         }
     });

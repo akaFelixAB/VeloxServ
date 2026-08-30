@@ -25,7 +25,8 @@
 
 namespace VeloxServ {
 
-namespace http = boost::beast::http;
+namespace beast = boost::beast;
+namespace http = beast::http;
 namespace net = boost::asio;
 using tcp = net::ip::tcp;
 
@@ -34,10 +35,10 @@ using Handler = std::function<http::response<http::string_body>(const http::requ
 
 // Manages the lifetime of an HTTP session for a single connection
 class HttpSession : public std::enable_shared_from_this<HttpSession> {
-    tcp::socket _socket;                            // Socket for the session
+    beast::tcp_stream _socket;                      // Socket for the session
     http::request<http::string_body> _request;      // Request received from the client
     http::response<http::string_body> _response;    // Response to be sent
-    boost::beast::flat_buffer _buffer;              // Buffer for reading
+    beast::flat_buffer _buffer;                     // Buffer for reading
     std::map<std::string, Handler> _routes;         // Map of routes to handlers
 
 public:

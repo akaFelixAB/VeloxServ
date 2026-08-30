@@ -24,7 +24,8 @@
 
 namespace VeloxServ {
 
-namespace http = boost::beast::http;
+namespace beast = boost::beast;
+namespace http = beast::http;
 namespace net = boost::asio;
 using tcp = net::ip::tcp;
 
