@@ -31,23 +31,22 @@ namespace net = boost::asio;
 using tcp = net::ip::tcp;
 
 // Route handler type: takes a request and returns a response
-using Handler = std::function<http::response<http::string_body>(const http::request<http::string_body>&)>;
+using Handler = std::function<http::message_generator(const http::request<http::string_body>&)>;
 
 // Manages the lifetime of an HTTP session for a single connection
 class HttpSession : public std::enable_shared_from_this<HttpSession> {
-    beast::tcp_stream _socket;                      // Socket for the session
-    http::request<http::string_body> _request;      // Request received from the client
-    http::response<http::string_body> _response;    // Response to be sent
-    beast::flat_buffer _buffer;                     // Buffer for reading
-    std::map<std::string, Handler> _routes;         // Map of routes to handlers
+    beast::tcp_stream _socket;                          // Socket for the session
+    http::request<http::string_body> _request;          // Request received from the client
+    beast::flat_buffer _buffer;                         // Buffer for reading
+    std::map<std::string, Handler> _routes;             // Map of routes to handlers
 
 public:
     HttpSession(tcp::socket socket, std::map<std::string, Handler> routes)
-        : _socket(std::move(socket)), _routes(std::move(routes)) {}
+    : _socket(std::move(socket)), _routes(std::move(routes)) {}
 
     inline void start() { read_request(); }
 
-    ~HttpSession() { do_close(); }
+    ~HttpSession() = default;
 
 private:
     // State machine for handling the HTTP session
@@ -56,15 +55,8 @@ private:
     void on_read(boost::system::error_code ec, std::size_t bytes_transferred);
     void read_request();
 
-    // Process the request and generate a response
+    // Process the request and generate a response and send it back to the client
     void process_request();
-
-    // Write the response back to the client
-    void on_write(boost::system::error_code ec, std::size_t bytes_transferred);
-    void write_response();
-
-    // Close the connection
-    void do_close();
 }; // class HttpSession
 
 } // namespace VeloxServ

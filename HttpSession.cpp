@@ -36,48 +36,44 @@ void VeloxServ::HttpSession::read_request() {
 void VeloxServ::HttpSession::process_request() {
     _socket.expires_after(std::chrono::seconds(30));
 
-    _response.version(_request.version());
-    _response.keep_alive(_request.keep_alive());
-
+    // Save the keep-alive status and the request path for routing
+    bool keep_alive = _request.keep_alive();
     std::string path = std::string(_request.target());
-    auto it = _routes.find(path); // Find the handler for the requested path
+    auto it = _routes.find(path);
+
+    http::message_generator msg = http::response<http::string_body>{
+        http::status::internal_server_error, _request.version()
+    }; // Default to 500
+
     if (it != _routes.end()) {
         try {
-            _response = it->second(_request);
+            msg = it->second(_request); // Handle the request using the registered handler
         } catch (const std::exception& e) {
-            _response.result(http::status::internal_server_error);
-            _response.set(http::field::content_type, "text/plain");
-            _response.body() = e.what();
+            http::response<http::string_body> res{http::status::internal_server_error, _request.version()};
+            res.set(http::field::content_type, "text/plain");
+            res.keep_alive(keep_alive);
+            res.body() = e.what();
+            res.prepare_payload();
+            msg = std::move(res);
         }
     } else {
-        _response.result(http::status::not_found);
-        _response.set(http::field::content_type, "text/plain");
-        _response.body() = "404 Not Found";
+        http::response<http::string_body> res{http::status::not_found, _request.version()};
+        res.set(http::field::content_type, "text/plain");
+        res.keep_alive(keep_alive);
+        res.body() = "404 Not Found";
+        res.prepare_payload();
+        msg = std::move(res);
     }
 
-    _response.prepare_payload();
-    write_response();
-}
-
-void VeloxServ::HttpSession::on_write(boost::system::error_code ec, std::size_t bytes_transferred) {
-    if (!ec) {
-        if (_response.keep_alive()) {
-            read_request();
-        }
-    }
-}
-
-void VeloxServ::HttpSession::write_response() {
+    // Write the response back to the client
     auto self = shared_from_this();
-    http::async_write(
-        _socket, _response,
-        beast::bind_front_handler(
-            &HttpSession::on_write,
-            self
-        )
+    beast::async_write(
+        _socket,
+        std::move(msg),
+        [self, keep_alive](boost::system::error_code ec, std::size_t bytes_transferred) {
+            if (!ec && keep_alive) {
+                self->read_request();
+            }
+        }
     );
-}
-
-void VeloxServ::HttpSession::do_close() {
-    _socket.close();
 }

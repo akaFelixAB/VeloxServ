@@ -2,12 +2,12 @@
 host = "127.0.0.1"
 port = 8080
 timeout_seconds = 30
-max_connections = 10000
+max_connections = 10000 # Not supported yet
 
 [[routes]]
 path = "/"
 type = "static"
-root = "./public"
+root = "./public/"
 index = "index.html"
 
 [[routes]]

@@ -20,15 +20,33 @@
 #include <boost/beast.hpp>
 
 #include "HttpSession.hpp"
-#include "HttpServ.hpp"
+#include "HttpServer.hpp"
+#include "ConfigManager.hpp"
 
 int main(int argc, char* argv[]) {
     namespace http = boost::beast::http;
     namespace net = boost::asio;
     using tcp = net::ip::tcp;
 
-    net::io_context ioc;
-    tcp::endpoint endpoint(tcp::v4(), 8080);
+    std::string config_path = "default.toml";
 
-    VeloxServ::HttpServ server(ioc, endpoint);
+    try {
+        VeloxServ::ConfigManager config_mgr;
+        config_mgr.parse_file(config_path);
+        const auto& cfg = config_mgr.get_config();
+
+        std::cout << "[Config] Loaded successfully from " << config_path << "\n";
+        std::cout << "[Config] Listening on " << cfg.host << ":" << cfg.port << "\n";
+
+        net::io_context ioc;
+
+        // Create the HTTP server
+        VeloxServ::HttpServer server(ioc, cfg);
+
+        server.run();
+        ioc.run();
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
 }
