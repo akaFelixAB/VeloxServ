@@ -37,8 +37,14 @@ class HttpServ : public std::enable_shared_from_this<HttpServ> {
     std::map<std::string, Handler> _routes;
 
 public:
-    HttpServ(net::io_context& ioc, tcp::endpoint endpoint)
-        : _acceptor(ioc, endpoint) {}
+    static std::shared_ptr<HttpServ> create(net::io_context& ioc, tcp::endpoint endpoint) {
+        class make_shared_enabler : public HttpServ {
+        public:
+            make_shared_enabler(net::io_context& ioc, tcp::endpoint endpoint) 
+                : HttpServ(ioc, endpoint) {}
+        };
+        return std::make_shared<make_shared_enabler>(ioc, endpoint);
+    }
 
     void route(const std::string& path, Handler handler) {
         _routes[path] = std::move(handler);
@@ -47,6 +53,8 @@ public:
     void run() { accept_request(); }
 
 private:
+    HttpServ(net::io_context& ioc, tcp::endpoint endpoint)
+        : _acceptor(ioc, endpoint) {}
     // Accept a new connection
     void on_accept(boost::system::error_code ec, tcp::socket socket);
     void accept_request();
