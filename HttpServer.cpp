@@ -14,18 +14,18 @@
 
 
 
-#include "HttpServ.hpp"
+#include "HttpServer.hpp"
 
 #include "HttpSession.hpp"
 
-void VeloxServ::HttpServ::Impl::on_accept(boost::system::error_code ec, tcp::socket socket) {
+void VeloxServ::HttpServer::Impl::on_accept(boost::system::error_code ec, tcp::socket socket) {
     if (!ec) {
         std::make_shared<VeloxServ::HttpSession>(std::move(socket), _routes)->start();
     }
     accept_request();
 }
 
-void VeloxServ::HttpServ::Impl::accept_request() {
+void VeloxServ::HttpServer::Impl::accept_request() {
     _acceptor.async_accept(
         beast::bind_front_handler(
             &Impl::on_accept,

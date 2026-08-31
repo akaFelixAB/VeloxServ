@@ -32,7 +32,7 @@ using tcp = net::ip::tcp;
 // Route handler type: takes a request and returns a response
 using Handler = std::function<http::response<http::string_body>(const http::request<http::string_body>&)>;
 
-class HttpServ {
+class HttpServer {
     private:
     // The Pimpl idiom: hide implementation details in a separate class
     class Impl : public std::enable_shared_from_this<Impl> {
@@ -58,8 +58,8 @@ class HttpServ {
     std::shared_ptr<Impl> _pimpl;
 
 public:
-    // Automatically create a HttpServ on the heap and return a shared_ptr to it
-    HttpServ(net::io_context& ioc, tcp::endpoint endpoint)
+    // Automatically create a HttpServer on the heap and return a shared_ptr to it
+    HttpServer(net::io_context& ioc, tcp::endpoint endpoint)
         : _pimpl(std::make_shared<Impl>(ioc, endpoint)) {}
 
     // Forward the route and run calls to the Impl instance

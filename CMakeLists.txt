@@ -9,7 +9,7 @@ find_package(tomlplusplus REQUIRED)
 
 add_executable(VeloxServ main.cpp
     HttpSession.cpp
-    HttpServ.cpp)
+    HttpServer.cpp)
 
 target_link_libraries(VeloxServ PRIVATE 
     Boost::asio 
