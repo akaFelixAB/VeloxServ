@@ -6,18 +6,32 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Boost
 find_package(Boost REQUIRED COMPONENTS asio beast)
 find_package(tomlplusplus REQUIRED)
+find_package(spdlog REQUIRED)
 
 add_executable(VeloxServ main.cpp
     HttpSession.cpp
-    HttpServer.cpp)
+    HttpServer.cpp
+    ConfigManager.cpp)
 
 target_link_libraries(VeloxServ PRIVATE 
     Boost::asio 
     Boost::beast
-    tomlplusplus::tomlplusplus)
+    tomlplusplus::tomlplusplus
+    spdlog::spdlog)
 
 include(CTest)
 enable_testing()
+
+
+# if(WIN32)
+#     # Windows 
+#     install(TARGETS VeloxServ DESTINATION bin)
+#     install(FILES default.toml DESTINATION bin) # 或者放在 config/
+# else()
+#     # POSIX
+#     install(TARGETS VeloxServ DESTINATION bin)
+#     install(FILES default.toml DESTINATION /etc/VeloxServ)
+# endif()
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
