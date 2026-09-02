@@ -8,10 +8,10 @@ find_package(Boost REQUIRED COMPONENTS asio beast)
 find_package(tomlplusplus REQUIRED)
 find_package(spdlog REQUIRED)
 
-add_executable(VeloxServ main.cpp
-    HttpSession.cpp
-    HttpServer.cpp
-    ConfigManager.cpp)
+add_executable(VeloxServ src/main.cpp
+    src/HttpSession.cpp
+    src/HttpServer.cpp
+    src/ConfigManager.cpp)
 
 target_link_libraries(VeloxServ PRIVATE 
     Boost::asio 
