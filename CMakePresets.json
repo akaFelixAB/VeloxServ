@@ -16,7 +16,100 @@
                 "strategy": "external"
             },
             "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
                 "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "BUILD_SHARED_LIBS": "OFF",
+                "ENABLE_TESTING": "ON"
+            }
+        },
+        {
+            "name": "linux-vcpkg-ninja-gcc-debug",
+            "displayName": "linux-gcc-debug",
+            "description": "Debug profile",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/debug/${presetName}",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            },
+            "toolset": {
+                "value": "compiler=gcc",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "BUILD_SHARED_LIBS": "OFF",
+                "ENABLE_TESTING": "ON"
+            }
+        },
+        {
+            "name": "darwin-vcpkg-ninja-clang-debug",
+            "displayName": "macos-clang-debug",
+            "description": "Debug profile",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/debug/${presetName}",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            },
+            "toolset": {
+                "value": "compiler=clang",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "BUILD_SHARED_LIBS": "OFF",
+                "ENABLE_TESTING": "ON"
+            }
+        },
+        {
+            "name": "linux-vcpkg-ninja-gcc-release",
+            "displayName": "linux-gcc-release",
+            "description": "Release profile",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/release/${presetName}",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            },
+            "toolset": {
+                "value": "compiler=gcc",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "BUILD_SHARED_LIBS": "OFF",
+                "ENABLE_TESTING": "ON"
+            }
+        },
+        {
+            "name": "darwin-vcpkg-ninja-clang-release",
+            "displayName": "macos-clang-release",
+            "description": "Release profile",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/release/${presetName}",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            },
+            "toolset": {
+                "value": "compiler=clang",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "BUILD_SHARED_LIBS": "OFF",
                 "ENABLE_TESTING": "ON"
