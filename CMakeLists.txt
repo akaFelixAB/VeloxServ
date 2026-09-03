@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Boost
 find_package(Boost REQUIRED COMPONENTS asio beast)
 find_package(tomlplusplus REQUIRED)
+find_package(nlohmann_json REQUIRED)
 find_package(spdlog REQUIRED)
 
 add_executable(VeloxServ src/main.cpp
@@ -17,6 +18,7 @@ target_link_libraries(VeloxServ PRIVATE
     Boost::asio 
     Boost::beast
     tomlplusplus::tomlplusplus
+    nlohmann_json::nlohmann_json
     spdlog::spdlog)
 
 include(CTest)
