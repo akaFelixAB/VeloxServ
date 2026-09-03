@@ -32,15 +32,20 @@ using json = nlohmann::json;
 class JsonFormatter : public spdlog::formatter {
 public:
     void format(const spdlog::details::log_msg& msg, spdlog::memory_buf_t& dest) override {
-        json log_entry = {
-            {"timestamp", fmt::format("{:%Y-%m-%dT%H:%M:%S.%eZ}", msg.time)},
-            {"level", spdlog::level::to_string_view(msg.level)},
-            {"message", msg.payload},
-            {"thread_id", msg.thread_id}
-        };
-        std::string log_line = log_entry.dump();
-        dest.append(log_line.data(), log_line.data() + log_line.size());
-        dest.push_back('\n');
+        std::string_view lvl{spdlog::level::to_string_view(msg.level).data(), spdlog::level::to_string_view(msg.level).size()};
+        std::string_view logger{msg.logger_name.data(), msg.logger_name.size()};
+        std::string_view payload{msg.payload.data(), msg.payload.size()};
+
+        // Format the log message as JSON and append it to the destination buffer
+        fmt::format_to(
+            std::back_inserter(dest),
+            "{{\"timestamp\":\"{:%Y-%m-%dT%H:%M:%S.%eZ}\",\"level\":\"{}\",\"logger\":\"{}\",\"message\":\"{}\",\"thread_id\":{}}}\n",
+            msg.time,
+            lvl,
+            logger,
+            payload,
+            msg.thread_id
+        );
     }
 
     std::unique_ptr<formatter> clone() const override {
