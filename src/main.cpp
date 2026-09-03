@@ -23,10 +23,15 @@
 #include "HttpServer.hpp"
 #include "ConfigManager.hpp"
 
+#include "logging.hpp"
+
 int main(int argc, char* argv[]) {
     namespace http = boost::beast::http;
     namespace net = boost::asio;
     using tcp = net::ip::tcp;
+
+    // Initialize bootstrap logging for early startup messages
+    init_bootstrap_logging();
 
     std::string config_path = "default.toml";
 
@@ -35,8 +40,8 @@ int main(int argc, char* argv[]) {
         config_mgr.parse_file(config_path);
         const auto& cfg = config_mgr.get_config();
 
-        std::cout << "[Config] Loaded successfully from " << config_path << "\n";
-        std::cout << "[Config] Listening on " << cfg.host << ":" << cfg.port << "\n";
+        // Initialize logging
+        init_logging(cfg);
 
         net::io_context ioc;
 
@@ -46,7 +51,10 @@ int main(int argc, char* argv[]) {
         server.run();
         ioc.run();
     } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        spdlog::critical("Exception: {}", e.what());
+        shutdown_logging();
         return EXIT_FAILURE;
     }
+    shutdown_logging();
+    return EXIT_SUCCESS;
 }

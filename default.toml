@@ -1,8 +1,16 @@
 [server]
+name = "VeloxServ"
 host = "127.0.0.1"
 port = 8080
 timeout_seconds = 30
 max_connections = 10000 # Not supported yet
+
+[logging]
+console_output = true
+file_output = true          # Options with "*" is valid iff this is true
+log_file = "log/serv.log"   # *
+max_file_size = 10          # *
+max_files = 3               # *
 
 [[routes]]
 path = "/"
