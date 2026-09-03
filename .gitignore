@@ -4,6 +4,9 @@
 ### Build dir ###
 build/
 
+### Log dir ###
+log/
+
 ### C++ ###
 # Prerequisites
 *.d
