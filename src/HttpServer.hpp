@@ -16,11 +16,14 @@
 
 #pragma once
 
-#include <boost/asio.hpp>
-#include <boost/beast.hpp>
-
 #include <memory>
 #include <map>
+#include <unordered_map>
+#include <string_view>
+
+#include <boost/asio.hpp>
+#include <boost/beast.hpp>
+#include <spdlog/spdlog.h>
 
 #include "ConfigManager.hpp"
 
@@ -33,6 +36,13 @@ using tcp = net::ip::tcp;
 
 // Route handler type: takes a request and returns a response
 using Handler = std::function<http::message_generator(const http::request<http::string_body>&)>;
+
+struct StringHash {
+    using is_transparent = void;
+    std::size_t operator()(std::string_view txt) const {
+        return std::hash<std::string_view>{}(txt);
+    }
+};
 
 class HttpServer {
     private:
@@ -47,11 +57,19 @@ class HttpServer {
         : _acceptor(ioc, tcp::endpoint(net::ip::make_address(config.host), config.port)),
           _config(std::move(config)) {}
 
+        Impl(const Impl&) = delete;
+        Impl& operator=(const Impl&) = delete;
+        ~Impl() = default;
+
         void route(const std::string& path, Handler handler) {
             _routes[path] = std::move(handler);
         }
 
-        void run() { accept_request(); }
+        void run() { 
+            spdlog::info("Starting HTTP server");
+            spdlog::info("Listening on {}:{}", _config.host, _config.port);
+            accept_request();
+        }
 
     private:
         void on_accept(boost::system::error_code ec, tcp::socket socket);
@@ -62,30 +80,41 @@ class HttpServer {
     std::shared_ptr<Impl> _pimpl;
 
     // Get the MIME type based on the file extension
+    const std::unordered_map<std::string_view, std::string, StringHash, std::equal_to<>> _mime_types = {
+        {".htm",  "text/html"},
+        {".html", "text/html"},
+        {".php",  "text/html"},
+        {".css",  "text/css"},
+        {".txt",  "text/plain"},
+        {".js",   "application/javascript"},
+        {".json", "application/json"},
+        {".png",  "image/png"},
+        {".jpe",  "image/jpeg"},
+        {".jpeg", "image/jpeg"},
+        {".jpg",  "image/jpeg"},
+        {".gif",  "image/gif"},
+        {".bmp",  "image/bmp"},
+        {".ico",  "image/vnd.microsoft.icon"},
+        {".svg",  "image/svg+xml"},
+        {".svgz", "image/svg+xml"}
+    };
+
     inline beast::string_view mime_type(beast::string_view path) {
-        using beast::iequals;
-        auto const ext = [&path] {
-            auto const pos = path.rfind(".");
-            if(pos == beast::string_view::npos) return beast::string_view{};
-            return path.substr(pos);
-        }();
-        if(iequals(ext, ".htm"))  return "text/html";
-        if(iequals(ext, ".html")) return "text/html";
-        if(iequals(ext, ".php"))  return "text/html";
-        if(iequals(ext, ".css"))  return "text/css";
-        if(iequals(ext, ".txt"))  return "text/plain";
-        if(iequals(ext, ".js"))   return "application/javascript";
-        if(iequals(ext, ".json")) return "application/json";
-        if(iequals(ext, ".png"))  return "image/png";
-        if(iequals(ext, ".jpe"))  return "image/jpeg";
-        if(iequals(ext, ".jpeg")) return "image/jpeg";
-        if(iequals(ext, ".jpg"))  return "image/jpeg";
-        if(iequals(ext, ".gif"))  return "image/gif";
-        if(iequals(ext, ".bmp"))  return "image/bmp";
-        if(iequals(ext, ".ico"))  return "image/vnd.microsoft.icon";
-        if(iequals(ext, ".svg"))  return "image/svg+xml";
-        if(iequals(ext, ".svgz")) return "image/svg+xml";
-        return "application/octet-stream"; // Default MIME type for unknown extensions
+        // Get the file extension from the path
+        auto const pos = path.rfind('.');
+        if (pos == beast::string_view::npos) {
+            return "application/octet-stream";
+        }
+        
+        beast::string_view const ext = path.substr(pos);
+
+        // Find the MIME type in the map
+        auto it = _mime_types.find(ext);
+        if (it != _mime_types.end()) {
+            return it->second;
+        }
+        
+        return "application/octet-stream";
     }
 
     // The core static file handling function
