@@ -36,6 +36,8 @@ using tcp = net::ip::tcp;
 
 // Route handler type: takes a request and returns a response
 using Handler = std::function<http::message_generator(const http::request<http::string_body>&)>;
+// Type alias for route table
+using RouteTable = std::map<std::string, Handler>;
 
 struct StringHash {
     using is_transparent = void;
@@ -50,19 +52,20 @@ class HttpServer {
     class Impl : public std::enable_shared_from_this<Impl> {
         tcp::acceptor _acceptor;
         ServerConfig _config;
-        std::map<std::string, Handler> _routes;
+        std::shared_ptr<RouteTable> _routes;
 
     public:
         Impl(net::io_context& ioc, const ServerConfig& config) 
         : _acceptor(ioc, tcp::endpoint(net::ip::make_address(config.host), config.port)),
-          _config(std::move(config)) {}
+          _config(std::move(config)),
+          _routes(std::make_shared<RouteTable>()) {}
 
         Impl(const Impl&) = delete;
         Impl& operator=(const Impl&) = delete;
         ~Impl() = default;
 
         void route(const std::string& path, Handler handler) {
-            _routes[path] = std::move(handler);
+            (*_routes)[path] = std::move(handler);
         }
 
         void run() { 

@@ -32,16 +32,18 @@ using tcp = net::ip::tcp;
 
 // Route handler type: takes a request and returns a response
 using Handler = std::function<http::message_generator(const http::request<http::string_body>&)>;
+// Type alias for route table
+using RouteTable = std::map<std::string, Handler>;
 
 // Manages the lifetime of an HTTP session for a single connection
 class HttpSession : public std::enable_shared_from_this<HttpSession> {
     beast::tcp_stream _socket;                          // Socket for the session
     http::request<http::string_body> _request;          // Request received from the client
     beast::flat_buffer _buffer;                         // Buffer for reading
-    std::map<std::string, Handler> _routes;             // Map of routes to handlers
+    std::shared_ptr<const RouteTable> _routes;             // Map of routes to handlers
 
 public:
-    HttpSession(tcp::socket socket, std::map<std::string, Handler> routes)
+    HttpSession(tcp::socket socket, std::shared_ptr<const RouteTable> routes)
     : _socket(std::move(socket)), _routes(std::move(routes)) {}
 
     inline void start() { read_request(); }
