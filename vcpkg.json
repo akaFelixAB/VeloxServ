@@ -2,8 +2,9 @@
   "dependencies": [
     "boost-asio",
     "boost-beast",
+    "nlohmann-json",
     "spdlog",
     "tomlplusplus",
-    "nlohmann-json"
+    "boost-url"
   ]
 }
