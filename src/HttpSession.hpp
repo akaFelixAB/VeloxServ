@@ -22,12 +22,14 @@
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
+#include <boost/url.hpp>
 
 namespace VeloxServ {
 
 namespace beast = boost::beast;
 namespace http = beast::http;
 namespace net = boost::asio;
+namespace urls = boost::urls;
 using tcp = net::ip::tcp;
 
 // Route handler type: takes a request and returns a response

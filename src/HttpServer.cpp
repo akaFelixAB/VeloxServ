@@ -16,6 +16,8 @@
 
 #include "HttpServer.hpp"
 
+#include <filesystem>
+
 #include "HttpSession.hpp"
 
 VeloxServ::http::message_generator VeloxServ::HttpServer::handle_static_request(
@@ -23,10 +25,34 @@ VeloxServ::http::message_generator VeloxServ::HttpServer::handle_static_request(
     const std::string& root_dir,    
     const std::string& index_file
 ) {
-    std::string req_path = std::string(req.target());
+    // Parse the request target (e.g., "/path/to/file?query=1")
+    auto result = boost::urls::parse_origin_form(req.target());
+    if (result.has_error()) {
+        spdlog::warn("Invalid URL format: {}", req.target());
+        http::response<http::string_body> res{http::status::bad_request, req.version()};
+        res.set(http::field::content_type, "text/plain");
+        res.body() = "Invalid Request Target";
+        res.prepare_payload();
+        return res;
+    }
 
-    // Safe path check, prevent path traversal attacks (e.g., GET /../../etc/passwd)
-    if (req_path.find("..") != std::string::npos) {
+    boost::urls::url_view uv = result.value();
+    
+    // Get the path and query components (e.g., "/path/to/file" and "query=1")
+    // std::string path = uv.path();
+    // std::string query = uv.query();
+
+    // CHeck for ".." in the path segments to prevent directory traversal
+    bool contains_dot_dot = false;
+    for (auto seg : uv.segments()) {
+        if (seg == "..") {
+            contains_dot_dot = true;
+            break;
+        }
+    }
+
+    if (contains_dot_dot) {
+        spdlog::warn("Illegal request-target detected: {}", req.target());
         http::response<http::string_body> res{http::status::bad_request, req.version()};
         res.set(http::field::content_type, "text/plain");
         res.body() = "Illegal request-target";
@@ -34,28 +60,49 @@ VeloxServ::http::message_generator VeloxServ::HttpServer::handle_static_request(
         return res;
     }
 
-    // Normalize the request path to ensure it starts with a '/'
-    std::string full_path = root_dir + req_path;
+    // Extract the pure Path component (ignore Query parameters)
+    std::string req_path = uv.path();
 
-    // If the request path ends with '/', append the index file
-    if (full_path.back() == '/') {
-        full_path += index_file;
+    // Handle the case where the request path is empty or ends with a slash, indicating a directory
+    if (req_path.empty() || req_path.back() == '/') {
+        req_path += index_file;
     }
 
-    // Try to open the file using Boost.Beast's file_body
+    // Construct the full file path by combining the root directory and the request path
+    // Convert into relative path to prevent filesystem traversal
+    std::filesystem::path rel_path = req_path.starts_with('/') ? req_path.substr(1) : req_path;
+    std::filesystem::path base_path = std::filesystem::weakly_canonical(root_dir);
+    std::filesystem::path target_path = std::filesystem::weakly_canonical(base_path / rel_path);
+
+    // Check if the target path is still within the base path to prevent directory traversal
+    auto [root_end, dummy] = std::mismatch(base_path.begin(), base_path.end(), target_path.begin());
+    if (root_end != base_path.end()) {
+        spdlog::warn("Path traversal attempt blocked: {}", target_path.string());
+        http::response<http::string_body> res{http::status::forbidden, req.version()};
+        res.set(http::field::content_type, "text/plain");
+        res.body() = "403 Forbidden";
+        res.prepare_payload();
+        return res;
+    }
+
+    std::string full_path = target_path.string();
+
+    // Read the file and prepare the response
     beast::error_code ec;
     http::file_body::value_type body;
     body.open(full_path.c_str(), beast::file_mode::scan, ec);
 
-    // Handle errors when opening the file
     if (ec == beast::errc::no_such_file_or_directory) {
+        spdlog::warn("File not found: {}", full_path);
         http::response<http::string_body> res{http::status::not_found, req.version()};
         res.set(http::field::content_type, "text/plain");
-        res.body() = "File not found";
+        res.body() = "404 Not Found";
         res.prepare_payload();
         return res;
     }
+
     if (ec) {
+        spdlog::error("Server Error: {}", ec.message());
         http::response<http::string_body> res{http::status::internal_server_error, req.version()};
         res.set(http::field::content_type, "text/plain");
         res.body() = "Server Error: " + ec.message();
@@ -63,7 +110,6 @@ VeloxServ::http::message_generator VeloxServ::HttpServer::handle_static_request(
         return res;
     }
 
-    // Respond with the file content using http::file_body
     http::response<http::file_body> res{
         std::piecewise_construct,
         std::make_tuple(std::move(body)),
@@ -74,12 +120,13 @@ VeloxServ::http::message_generator VeloxServ::HttpServer::handle_static_request(
     res.keep_alive(req.keep_alive());
     res.prepare_payload();
 
-    // Return the response as a message_generator
     return res;
 }
 
 void VeloxServ::HttpServer::load_routes_from_config(const ServerConfig& config) {
+    spdlog::info("Loading routes from configuration");
     for (const auto& r : config.routes) {
+        spdlog::info("Loading route: {}", r.path);
         if (r.type == "static") {
             // Register a static file handler for the route
             _pimpl->route(r.path, 
@@ -94,6 +141,7 @@ void VeloxServ::HttpServer::load_routes_from_config(const ServerConfig& config) 
 }
 
 void VeloxServ::HttpServer::Impl::on_accept(boost::system::error_code ec, tcp::socket socket) {
+    spdlog::info("New connection accepted");
     if (!ec) {
         std::make_shared<VeloxServ::HttpSession>(std::move(socket), _routes)->start();
     }

@@ -38,16 +38,38 @@ void VeloxServ::HttpSession::process_request() {
 
     // Save the keep-alive status and the request path for routing
     bool keep_alive = _request.keep_alive();
-    std::string path = std::string(_request.target());
-    auto it = _routes.find(path);
+    
+    // Parse the request target (e.g., "/path/to/file?query=1")
+    std::string_view req_target = _request.target();
+    auto parsed_url = boost::urls::parse_origin_form(req_target);
+    
+    std::string path;
+    if (parsed_url.has_value()) {
+        path.assign(parsed_url->path().data(), parsed_url->path().size());
+    } else {
+        path.assign(req_target.data(), req_target.size());
+    }
+
+    auto matched_it = _routes->end();
+    size_t max_len = 0;
+
+    for (auto it = _routes->begin(); it != _routes->end(); ++it) {
+        const std::string& route_prefix = it->first;
+        if (path.rfind(route_prefix, 0) == 0) { // Match if the path starts with the route prefix
+            if (route_prefix.length() > max_len) {
+                max_len = route_prefix.length();
+                matched_it = it;
+            }
+        }
+    }
 
     http::message_generator msg = http::response<http::string_body>{
         http::status::internal_server_error, _request.version()
     }; // Default to 500
 
-    if (it != _routes.end()) {
+    if (matched_it != _routes->end()) {
         try {
-            msg = it->second(_request); // Handle the request using the registered handler
+            msg = matched_it->second(_request); // Handle the request using the registered handler
         } catch (const std::exception& e) {
             http::response<http::string_body> res{http::status::internal_server_error, _request.version()};
             res.set(http::field::content_type, "text/plain");
