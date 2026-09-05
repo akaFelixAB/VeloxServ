@@ -57,11 +57,12 @@ VeloxServ::http::message_generator VeloxServ::HttpServer::handle_static_request(
 
     if (contains_dot_dot) {
         spdlog::warn("Illegal request-target detected: {}", req.target());
-        http::response<http::string_body> res{http::status::bad_request, req.version()};
-        res.set(http::field::content_type, "text/plain");
-        res.body() = "Illegal request-target";
-        res.prepare_payload();
-        return res;
+        return make_error_response(
+            http::status::bad_request, 
+            req.version(), 
+            "Illegal request-target", 
+            req.keep_alive()
+        );
     }
 
     // Extract the pure Path component (ignore Query parameters)

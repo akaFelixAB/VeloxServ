@@ -56,7 +56,7 @@ void VeloxServ::HttpSession::process_request() {
     auto matched_it = _routes->end();
     size_t max_len = 0;
 
-    for (auto it = _routes->begin(); it != _routes->end(); ++it) {
+    for (auto it = _routes->begin(); it != _routes->end(); it++) {
         const std::string& route_prefix = it->first;
         if (path.rfind(route_prefix, 0) == 0) { // Match if the path starts with the route prefix
             if (route_prefix.length() > max_len) {
@@ -66,6 +66,11 @@ void VeloxServ::HttpSession::process_request() {
         }
     }
 
+    spdlog::debug(
+        "Matched route: {}", 
+        matched_it != _routes->end() ? matched_it->first : "None"
+    );
+
     http::message_generator msg = http::response<http::string_body>{
         http::status::internal_server_error, _request.version()
     }; // Default to 500
@@ -74,20 +79,21 @@ void VeloxServ::HttpSession::process_request() {
         try {
             msg = matched_it->second(_request); // Handle the request using the registered handler
         } catch (const std::exception& e) {
-            http::response<http::string_body> res{http::status::internal_server_error, _request.version()};
-            res.set(http::field::content_type, "text/plain");
-            res.keep_alive(keep_alive);
-            res.body() = e.what();
-            res.prepare_payload();
-            msg = std::move(res);
+            spdlog::error("Error handling request: {}", e.what());
+            msg = make_error_response(
+                http::status::internal_server_error, 
+                _request.version(), 
+                e.what(), 
+                keep_alive
+            );
         }
     } else {
-        http::response<http::string_body> res{http::status::not_found, _request.version()};
-        res.set(http::field::content_type, "text/plain");
-        res.keep_alive(keep_alive);
-        res.body() = "404 Not Found";
-        res.prepare_payload();
-        msg = std::move(res);
+        msg = make_error_response(
+            http::status::not_found, 
+            _request.version(), 
+            "404 Not Found", 
+            keep_alive
+        );
     }
 
     // Write the response back to the client

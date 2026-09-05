@@ -37,6 +37,20 @@ using Handler = std::function<http::message_generator(const http::request<http::
 // Type alias for route table
 using RouteTable = std::map<std::string, Handler>;
 
+inline http::response<http::string_body> make_error_response(
+    http::status status, 
+    unsigned version, 
+    std::string_view message, 
+    bool keep_alive = false
+) {
+    http::response<http::string_body> res{status, version};
+    res.set(http::field::content_type, "text/plain");
+    res.keep_alive(keep_alive);
+    res.body() = message;
+    res.prepare_payload();
+    return res;
+}
+
 // Manages the lifetime of an HTTP session for a single connection
 class HttpSession : public std::enable_shared_from_this<HttpSession> {
     beast::tcp_stream _socket;                          // Socket for the session
