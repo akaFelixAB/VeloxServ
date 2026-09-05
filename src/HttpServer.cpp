@@ -47,13 +47,10 @@ VeloxServ::http::message_generator VeloxServ::HttpServer::handle_static_request(
     // std::string query = uv.query();
 
     // CHeck for ".." in the path segments to prevent directory traversal
-    bool contains_dot_dot = false;
-    for (auto seg : uv.segments()) {
-        if (seg == "..") {
-            contains_dot_dot = true;
-            break;
-        }
-    }
+    bool contains_dot_dot = std::any_of(
+        uv.segments().begin(), uv.segments().end(), 
+        [](std::string_view seg) { return seg == ".."; }
+    );
 
     if (contains_dot_dot) {
         spdlog::warn("Illegal request-target detected: {}", req.target());
