@@ -20,6 +20,8 @@
 
 #include "HttpSession.hpp"
 
+#include <spdlog/spdlog.h>
+
 VeloxServ::http::message_generator VeloxServ::HttpServer::handle_static_request(
     const http::request<http::string_body>& req, 
     const std::string& root_dir,    
@@ -37,6 +39,8 @@ VeloxServ::http::message_generator VeloxServ::HttpServer::handle_static_request(
     }
 
     boost::urls::url_view uv = result.value();
+
+    spdlog::debug("Parsed URL: {}", uv.buffer());
     
     // Get the path and query components (e.g., "/path/to/file" and "query=1")
     // std::string path = uv.path();

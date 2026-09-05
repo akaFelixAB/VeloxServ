@@ -16,6 +16,8 @@
 
 #include "HttpSession.hpp"
 
+#include <spdlog/spdlog.h>
+
 void VeloxServ::HttpSession::on_read(boost::system::error_code ec, std::size_t bytes_transferred) {
     if (!ec) {
         process_request();
@@ -42,9 +44,10 @@ void VeloxServ::HttpSession::process_request() {
     // Parse the request target (e.g., "/path/to/file?query=1")
     std::string_view req_target = _request.target();
     auto parsed_url = boost::urls::parse_origin_form(req_target);
-    
+
     std::string path;
     if (parsed_url.has_value()) {
+        spdlog::debug("Parsed URL: {}", parsed_url->buffer());
         path.assign(parsed_url->path().data(), parsed_url->path().size());
     } else {
         path.assign(req_target.data(), req_target.size());
