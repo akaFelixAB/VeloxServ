@@ -55,7 +55,7 @@ private:
         std::shared_ptr<RouteTable> _routes;
 
     public:
-        Impl(net::io_context& ioc, const ServerConfig& config) :
+        Impl(net::io_context& ioc, ServerConfig config) :
             _acceptor(ioc, tcp::endpoint(net::ip::make_address(config.host), config.port)),
             _config(std::move(config)), _routes(std::make_shared<RouteTable>()) {}
 

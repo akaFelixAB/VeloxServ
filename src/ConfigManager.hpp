@@ -61,7 +61,7 @@ public:
 
     void parse_file(const std::string& file_path);
 
-    const ServerConfig& get_config() const {
+    [[nodiscard]] const ServerConfig& get_config() const {
         return _config;
     }
 };  // class ConfigManager

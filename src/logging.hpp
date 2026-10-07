@@ -50,7 +50,7 @@ public:
         );
     }
 
-    std::unique_ptr<formatter> clone() const override {
+    [[nodiscard]] std::unique_ptr<formatter> clone() const override {
         return spdlog::details::make_unique<JsonFormatter>();
     }
 };
