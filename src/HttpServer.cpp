@@ -12,19 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-
 #include "HttpServer.hpp"
-
-#include <filesystem>
 
 #include "HttpSession.hpp"
 
 #include <spdlog/spdlog.h>
 
+#include <filesystem>
+
 VeloxServ::http::message_generator VeloxServ::HttpServer::handle_static_request(
-    const http::request<http::string_body>& req, 
-    const std::string& root_dir,    
+    const http::request<http::string_body>& req,
+    const std::string& root_dir,
     const std::string& index_file
 ) {
     // Parse the request target (e.g., "/path/to/file?query=1")
@@ -41,23 +39,23 @@ VeloxServ::http::message_generator VeloxServ::HttpServer::handle_static_request(
     boost::urls::url_view uv = result.value();
 
     spdlog::debug("Parsed URL: {}", uv.buffer());
-    
+
     // Get the path and query components (e.g., "/path/to/file" and "query=1")
     // std::string path = uv.path();
     // std::string query = uv.query();
 
     // CHeck for ".." in the path segments to prevent directory traversal
-    bool contains_dot_dot = std::any_of(
-        uv.segments().begin(), uv.segments().end(), 
-        [](std::string_view seg) { return seg == ".."; }
-    );
+    bool contains_dot_dot =
+        std::any_of(uv.segments().begin(), uv.segments().end(), [](std::string_view seg) {
+            return seg == "..";
+        });
 
     if (contains_dot_dot) {
         spdlog::warn("Illegal request-target detected: {}", req.target());
         return make_error_response(
-            http::status::bad_request, 
-            req.version(), 
-            "Illegal request-target", 
+            http::status::bad_request,
+            req.version(),
+            "Illegal request-target",
             req.keep_alive()
         );
     }
@@ -131,11 +129,9 @@ void VeloxServ::HttpServer::load_routes_from_config(const ServerConfig& config) 
         spdlog::info("Loading route: {}", r.path);
         if (r.type == "static") {
             // Register a static file handler for the route
-            _pimpl->route(r.path, 
-                [this, r](const http::request<http::string_body>& req) {
+            _pimpl->route(r.path, [this, r](const http::request<http::string_body>& req) {
                 return handle_static_request(req, r.root, r.index);
-                }
-            );
+            });
         } else if (r.type == "proxy") {
             // Register a proxy handler for the route
         }
@@ -154,7 +150,7 @@ void VeloxServ::HttpServer::Impl::accept_request() {
     _acceptor.async_accept(
         beast::bind_front_handler(
             &Impl::on_accept,
-            shared_from_this() // safe call to shared_from_this()
+            shared_from_this()  // safe call to shared_from_this()
         )
     );
 }

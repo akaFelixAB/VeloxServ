@@ -12,19 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-
 #pragma once
 
-#include <chrono>
-
 #include <fmt/chrono.h>
-#include <spdlog/spdlog.h>
+#include <nlohmann/json.hpp>
 #include <spdlog/async.h>
+#include <spdlog/pattern_formatter.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/pattern_formatter.h>
-#include <nlohmann/json.hpp>
+#include <spdlog/spdlog.h>
+
+#include <chrono>
 
 using json = nlohmann::json;
 
@@ -32,14 +30,18 @@ using json = nlohmann::json;
 class JsonFormatter : public spdlog::formatter {
 public:
     void format(const spdlog::details::log_msg& msg, spdlog::memory_buf_t& dest) override {
-        std::string_view lvl{spdlog::level::to_string_view(msg.level).data(), spdlog::level::to_string_view(msg.level).size()};
+        std::string_view lvl{
+            spdlog::level::to_string_view(msg.level).data(),
+            spdlog::level::to_string_view(msg.level).size()
+        };
         std::string_view logger{msg.logger_name.data(), msg.logger_name.size()};
         std::string_view payload{msg.payload.data(), msg.payload.size()};
 
         // Format the log message as JSON and append it to the destination buffer
         fmt::format_to(
             std::back_inserter(dest),
-            "{{\"timestamp\":\"{:%Y-%m-%dT%H:%M:%S.%eZ}\",\"level\":\"{}\",\"logger\":\"{}\",\"message\":\"{}\",\"thread_id\":{}}}\n",
+            "{{\"timestamp\":\"{:%Y-%m-%dT%H:%M:%S.%eZ}\",\"level\":\"{}\",\"logger\":"
+            "\"{}\",\"message\":\"{}\",\"thread_id\":{}}}\n",
             msg.time,
             lvl,
             logger,
@@ -57,7 +59,7 @@ void init_bootstrap_logging() {
     // Initialize a basic console logger for early logging
     spdlog::set_pattern("[%Y-%m-%d %H:%M:%S] [BOOTSTRAP] [%^%l%$] %v");
     spdlog::set_level(spdlog::level::info);
-    
+
     spdlog::info("Starting VeloxServ pre-flight sequence...");
 }
 
@@ -71,8 +73,8 @@ void init_logging(const VeloxServ::ServerConfig& config) {
     if (config.logging.file_output) {
         // Create a rotating file sink
         auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
-            config.logging.log_file, 
-            config.logging.max_file_size, 
+            config.logging.log_file,
+            config.logging.max_file_size,
             config.logging.max_files
         );
         // Set the file sink to use the custom JSON formatter
@@ -90,14 +92,15 @@ void init_logging(const VeloxServ::ServerConfig& config) {
 
     // Create an asynchronous logger with dynamic sinks
     auto logger = std::make_shared<spdlog::async_logger>(
-        config.name, // Use log_file as the logger name
-        sinks.begin(), sinks.end(),
+        config.name,  // Use log_file as the logger name
+        sinks.begin(),
+        sinks.end(),
         spdlog::thread_pool(),
         spdlog::async_overflow_policy::overrun_oldest
     );
 
     // Set the logger level to info
-    logger->set_level(spdlog::level::info); 
+    logger->set_level(spdlog::level::info);
 
     // If encountering an error, flush immediately to ensure the message is logged
     logger->flush_on(spdlog::level::err);

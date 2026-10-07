@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-
 #include "HttpSession.hpp"
 
 #include <spdlog/spdlog.h>
@@ -27,11 +25,10 @@ void VeloxServ::HttpSession::on_read(boost::system::error_code ec, std::size_t b
 void VeloxServ::HttpSession::read_request() {
     auto self = shared_from_this();
     http::async_read(
-        _socket, _buffer, _request,
-        beast::bind_front_handler(
-            &HttpSession::on_read,
-            shared_from_this()
-        )
+        _socket,
+        _buffer,
+        _request,
+        beast::bind_front_handler(&HttpSession::on_read, shared_from_this())
     );
 }
 
@@ -40,7 +37,7 @@ void VeloxServ::HttpSession::process_request() {
 
     // Save the keep-alive status and the request path for routing
     bool keep_alive = _request.keep_alive();
-    
+
     // Parse the request target (e.g., "/path/to/file?query=1")
     std::string_view req_target = _request.target();
     auto parsed_url = boost::urls::parse_origin_form(req_target);
@@ -58,7 +55,7 @@ void VeloxServ::HttpSession::process_request() {
 
     for (auto it = _routes->begin(); it != _routes->end(); it++) {
         const std::string& route_prefix = it->first;
-        if (path.rfind(route_prefix, 0) == 0) { // Match if the path starts with the route prefix
+        if (path.rfind(route_prefix, 0) == 0) {  // Match if the path starts with the route prefix
             if (route_prefix.length() > max_len) {
                 max_len = route_prefix.length();
                 matched_it = it;
@@ -66,32 +63,30 @@ void VeloxServ::HttpSession::process_request() {
         }
     }
 
-    spdlog::debug(
-        "Matched route: {}", 
-        matched_it != _routes->end() ? matched_it->first : "None"
-    );
+    spdlog::debug("Matched route: {}", matched_it != _routes->end() ? matched_it->first : "None");
 
     http::message_generator msg = http::response<http::string_body>{
-        http::status::internal_server_error, _request.version()
-    }; // Default to 500
+        http::status::internal_server_error,
+        _request.version()
+    };  // Default to 500
 
     if (matched_it != _routes->end()) {
         try {
-            msg = matched_it->second(_request); // Handle the request using the registered handler
+            msg = matched_it->second(_request);  // Handle the request using the registered handler
         } catch (const std::exception& e) {
             spdlog::error("Error handling request: {}", e.what());
             msg = make_error_response(
-                http::status::internal_server_error, 
-                _request.version(), 
-                e.what(), 
+                http::status::internal_server_error,
+                _request.version(),
+                e.what(),
                 keep_alive
             );
         }
     } else {
         msg = make_error_response(
-            http::status::not_found, 
-            _request.version(), 
-            "404 Not Found", 
+            http::status::not_found,
+            _request.version(),
+            "404 Not Found",
             keep_alive
         );
     }

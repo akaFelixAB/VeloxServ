@@ -12,26 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "ConfigManager.hpp"
+#include "HttpServer.hpp"
+#include "HttpSession.hpp"
+#include "logging.hpp"
 
+#include <boost/asio.hpp>
+#include <boost/asio/signal_set.hpp>  // For handling signals like SIGINT and SIGTERM
+#include <boost/beast.hpp>
 
 #include <iostream>
 
-#include <boost/asio.hpp>
-#include <boost/beast.hpp>
-#include <boost/asio/signal_set.hpp> // For handling signals like SIGINT and SIGTERM
-
-#include "HttpSession.hpp"
-#include "HttpServer.hpp"
-#include "ConfigManager.hpp"
-
-#include "logging.hpp"
-
 // Handle termination signals for graceful shutdown
-void handle_signal(
-    boost::asio::io_context& ioc, 
-    boost::system::error_code ec, 
-    int signum
-) {
+void handle_signal(boost::asio::io_context& ioc, boost::system::error_code ec, int signum) {
     if (!ec) {
         spdlog::warn("Received termination signal ({}), stopping server...", signum);
         ioc.stop();
@@ -65,13 +58,8 @@ int main(int argc, char* argv[]) {
 
         // Set up signal handling for graceful shutdown
         net::signal_set signals(ioc, SIGINT, SIGTERM);
-        signals.async_wait(
-            boost::beast::bind_front_handler(
-                &handle_signal,
-                std::ref(ioc)
-            )
-        );
-        
+        signals.async_wait(boost::beast::bind_front_handler(&handle_signal, std::ref(ioc)));
+
         // Run the I/O context to start processing events
         spdlog::info("Server event loop starting...");
         ioc.run();

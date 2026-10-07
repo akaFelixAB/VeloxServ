@@ -12,17 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-
 #pragma once
-
-#include <memory>
-#include <map>
-#include <functional>
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 #include <boost/url.hpp>
+
+#include <functional>
+#include <map>
+#include <memory>
 
 namespace VeloxServ {
 
@@ -38,10 +36,7 @@ using Handler = std::function<http::message_generator(const http::request<http::
 using RouteTable = std::map<std::string, Handler>;
 
 inline http::response<http::string_body> make_error_response(
-    http::status status, 
-    unsigned version, 
-    std::string_view message, 
-    bool keep_alive = false
+    http::status status, unsigned version, std::string_view message, bool keep_alive = false
 ) {
     http::response<http::string_body> res{status, version};
     res.set(http::field::content_type, "text/plain");
@@ -53,16 +48,18 @@ inline http::response<http::string_body> make_error_response(
 
 // Manages the lifetime of an HTTP session for a single connection
 class HttpSession : public std::enable_shared_from_this<HttpSession> {
-    beast::tcp_stream _socket;                          // Socket for the session
-    http::request<http::string_body> _request;          // Request received from the client
-    beast::flat_buffer _buffer;                         // Buffer for reading
-    std::shared_ptr<const RouteTable> _routes;             // Map of routes to handlers
+    beast::tcp_stream _socket;                  // Socket for the session
+    http::request<http::string_body> _request;  // Request received from the client
+    beast::flat_buffer _buffer;                 // Buffer for reading
+    std::shared_ptr<const RouteTable> _routes;  // Map of routes to handlers
 
 public:
-    HttpSession(tcp::socket socket, std::shared_ptr<const RouteTable> routes)
-    : _socket(std::move(socket)), _routes(std::move(routes)) {}
+    HttpSession(tcp::socket socket, std::shared_ptr<const RouteTable> routes) :
+        _socket(std::move(socket)), _routes(std::move(routes)) {}
 
-    inline void start() { read_request(); }
+    inline void start() {
+        read_request();
+    }
 
     ~HttpSession() = default;
 
@@ -75,6 +72,6 @@ private:
 
     // Process the request and generate a response and send it back to the client
     void process_request();
-}; // class HttpSession
+};  // class HttpSession
 
-} // namespace VeloxServ
+}  // namespace VeloxServ

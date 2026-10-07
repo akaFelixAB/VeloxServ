@@ -12,21 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-
 #pragma once
 
-#include <memory>
-#include <map>
-#include <unordered_map>
-#include <string_view>
+#include "ConfigManager.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 #include <boost/url.hpp>
+
 #include <spdlog/spdlog.h>
 
-#include "ConfigManager.hpp"
+#include <map>
+#include <memory>
+#include <string_view>
+#include <unordered_map>
 
 namespace VeloxServ {
 
@@ -48,7 +47,7 @@ struct StringHash {
 };
 
 class HttpServer {
-    private:
+private:
     // The Pimpl idiom: hide implementation details in a separate class
     class Impl : public std::enable_shared_from_this<Impl> {
         tcp::acceptor _acceptor;
@@ -56,10 +55,9 @@ class HttpServer {
         std::shared_ptr<RouteTable> _routes;
 
     public:
-        Impl(net::io_context& ioc, const ServerConfig& config) 
-        : _acceptor(ioc, tcp::endpoint(net::ip::make_address(config.host), config.port)),
-          _config(std::move(config)),
-          _routes(std::make_shared<RouteTable>()) {}
+        Impl(net::io_context& ioc, const ServerConfig& config) :
+            _acceptor(ioc, tcp::endpoint(net::ip::make_address(config.host), config.port)),
+            _config(std::move(config)), _routes(std::make_shared<RouteTable>()) {}
 
         Impl(const Impl&) = delete;
         Impl& operator=(const Impl&) = delete;
@@ -69,7 +67,7 @@ class HttpServer {
             (*_routes)[path] = std::move(handler);
         }
 
-        void run() { 
+        void run() {
             spdlog::info("Starting HTTP server");
             spdlog::info("Listening on {}:{}", _config.host, _config.port);
             accept_request();
@@ -78,29 +76,30 @@ class HttpServer {
     private:
         void on_accept(boost::system::error_code ec, tcp::socket socket);
         void accept_request();
-    }; // class Impl
+    };  // class Impl
 
     // Manage shared_ptr of Impl to ensure proper lifetime management
     std::shared_ptr<Impl> _pimpl;
 
     // Get the MIME type based on the file extension
-    const std::unordered_map<std::string_view, std::string, StringHash, std::equal_to<>> _mime_types = {
-        {".htm",  "text/html"},
-        {".html", "text/html"},
-        {".php",  "text/html"},
-        {".css",  "text/css"},
-        {".txt",  "text/plain"},
-        {".js",   "application/javascript"},
-        {".json", "application/json"},
-        {".png",  "image/png"},
-        {".jpe",  "image/jpeg"},
-        {".jpeg", "image/jpeg"},
-        {".jpg",  "image/jpeg"},
-        {".gif",  "image/gif"},
-        {".bmp",  "image/bmp"},
-        {".ico",  "image/vnd.microsoft.icon"},
-        {".svg",  "image/svg+xml"},
-        {".svgz", "image/svg+xml"}
+    const std::unordered_map<std::string_view, std::string, StringHash, std::equal_to<>>
+        _mime_types = {
+            {".htm", "text/html"},
+            {".html", "text/html"},
+            {".php", "text/html"},
+            {".css", "text/css"},
+            {".txt", "text/plain"},
+            {".js", "application/javascript"},
+            {".json", "application/json"},
+            {".png", "image/png"},
+            {".jpe", "image/jpeg"},
+            {".jpeg", "image/jpeg"},
+            {".jpg", "image/jpeg"},
+            {".gif", "image/gif"},
+            {".bmp", "image/bmp"},
+            {".ico", "image/vnd.microsoft.icon"},
+            {".svg", "image/svg+xml"},
+            {".svgz", "image/svg+xml"}
     };
 
     inline beast::string_view mime_type(beast::string_view path) {
@@ -109,7 +108,7 @@ class HttpServer {
         if (pos == beast::string_view::npos) {
             return "application/octet-stream";
         }
-        
+
         beast::string_view const ext = path.substr(pos);
 
         // Find the MIME type in the map
@@ -117,21 +116,21 @@ class HttpServer {
         if (it != _mime_types.end()) {
             return it->second;
         }
-        
+
         return "application/octet-stream";
     }
 
     // The core static file handling function
     http::message_generator handle_static_request(
-        const http::request<http::string_body>& req, 
-        const std::string& root_dir, 
+        const http::request<http::string_body>& req,
+        const std::string& root_dir,
         const std::string& index_file
     );
 
 public:
     // Automatically create a HttpServer on the heap and return a shared_ptr to it
-    HttpServer(net::io_context& ioc, const ServerConfig& config)
-    : _pimpl(std::make_shared<Impl>(ioc, config)) {
+    HttpServer(net::io_context& ioc, const ServerConfig& config) :
+        _pimpl(std::make_shared<Impl>(ioc, config)) {
         load_routes_from_config(config);
     }
 
@@ -145,6 +144,6 @@ public:
     void run() {
         _pimpl->run();
     }
-}; // class HttpServ
+};  // class HttpServ
 
-} // namespace VeloxServ
+}  // namespace VeloxServ

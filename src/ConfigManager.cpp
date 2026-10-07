@@ -12,14 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-
 #include "ConfigManager.hpp"
+
+#include <spdlog/spdlog.h>
 
 #include <filesystem>
 #include <iostream>
-
-#include <spdlog/spdlog.h>
 
 void VeloxServ::ConfigManager::parse_file(const std::string& file_path) {
     try {
@@ -32,18 +30,23 @@ void VeloxServ::ConfigManager::parse_file(const std::string& file_path) {
             _config.name = server_node->get("name")->value_or("VeloxServ");
             _config.host = server_node->get("host")->value_or("127.0.0.1");
             _config.port = static_cast<unsigned short>(server_node->get("port")->value_or(8080));
-            _config.timeout_seconds = static_cast<int>(server_node->get("timeout_seconds")->value_or(30));
-            _config.max_connections = static_cast<int>(server_node->get("max_connections")->value_or(10000));
+            _config.timeout_seconds =
+                static_cast<int>(server_node->get("timeout_seconds")->value_or(30));
+            _config.max_connections =
+                static_cast<int>(server_node->get("max_connections")->value_or(10000));
         }
-
 
         // Parse the logging configuration
         if (auto logging_node = tbl["logging"].as_table()) {
-            _config.logging.console_output = static_cast<bool>(logging_node->get("console_output")->value_or(true));
-            _config.logging.file_output = static_cast<bool>(logging_node->get("file_output")->value_or(true));
+            _config.logging.console_output =
+                static_cast<bool>(logging_node->get("console_output")->value_or(true));
+            _config.logging.file_output =
+                static_cast<bool>(logging_node->get("file_output")->value_or(true));
             _config.logging.log_file = logging_node->get("log_file")->value_or("logs/serv.log");
-            _config.logging.max_file_size = static_cast<size_t>(logging_node->get("max_file_size")->value_or(10)) * 1_MB;
-            _config.logging.max_files = static_cast<int>(logging_node->get("max_files")->value_or(3));
+            _config.logging.max_file_size =
+                static_cast<size_t>(logging_node->get("max_file_size")->value_or(10)) * 1_MB;
+            _config.logging.max_files =
+                static_cast<int>(logging_node->get("max_files")->value_or(3));
         }
 
         // Parse the routes configuration
@@ -65,8 +68,10 @@ void VeloxServ::ConfigManager::parse_file(const std::string& file_path) {
             }
         }
     } catch (const toml::parse_error& err) {
-        throw std::runtime_error("TOML Parse Error: " + std::string(err.description()) 
-                                 + " at line " + std::to_string(err.source().begin.line));
+        throw std::runtime_error(
+            "TOML Parse Error: " + std::string(err.description()) + " at line " +
+            std::to_string(err.source().begin.line)
+        );
     } catch (const std::exception& e) {
         throw std::runtime_error("Config Load Failed: " + std::string(e.what()));
     }
