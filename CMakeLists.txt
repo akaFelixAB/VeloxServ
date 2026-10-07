@@ -3,11 +3,24 @@ project(VeloxServ VERSION 0.1.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Boost
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Code Quality
+find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
+if(CLANG_TIDY_EXE)
+    set(CMAKE_CXX_CLANG_TIDY 
+        "${CLANG_TIDY_EXE};-header-filter=${CMAKE_SOURCE_DIR}/src/.*"
+    )
+endif()
+
+# Deps
 find_package(Boost REQUIRED COMPONENTS asio beast url)
 find_package(tomlplusplus REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(spdlog REQUIRED)
+
+set(CMAKE_EXPORT_NO_PACKAGE_REGISTRY ON)
+set(CMAKE_NO_SYSTEM_FROM_IMPORTED ON) 
 
 add_executable(VeloxServ src/main.cpp
     src/HttpSession.cpp
