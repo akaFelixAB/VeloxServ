@@ -63,7 +63,8 @@ Checks: >
   readability-delete-null-pointer,
   readability-redundant-control-flow,
   readability-redundant-string-cstr,
-  readability-simplify-boolean-expr
+  readability-simplify-boolean-expr,
+  readability-identifier-naming
 
 WarningsAsErrors: ''
 
@@ -92,8 +93,28 @@ CheckOptions:
     value: UPPER_CASE
   - key: readability-identifier-naming.ConstexprVariableCase
     value: UPPER_CASE
+
+  # Set Member Case
+  - key: readability-identifier-naming.MemberCase
+    value: lower_case
+  - key: readability-identifier-naming.PrivateMemberCase
+    value: lower_case
+  - key: readability-identifier-naming.ProtectedMemberCase
+    value: lower_case
+
+  # Remove Member Prefixes
+  - key: readability-identifier-naming.MemberPrefix
+    value: ''
   - key: readability-identifier-naming.PrivateMemberPrefix
+    value: ''
+  - key: readability-identifier-naming.ProtectedMemberPrefix
+    value: ''
+
+  # Set Member Sufix '_'
+  - key: readability-identifier-naming.MemberSuffix
     value: '_'
   - key: readability-identifier-naming.PrivateMemberSuffix
-    value: ''
+    value: '_'
+  - key: readability-identifier-naming.ProtectedMemberSuffix
+    value: '_'
 ...
