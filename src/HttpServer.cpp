@@ -139,11 +139,11 @@ void VeloxServ::HttpServer::load_routes_from_config(const ServerConfig& config) 
 }
 
 void VeloxServ::HttpServer::Impl::on_accept(boost::system::error_code ec, tcp::socket socket) {
-    spdlog::info("New connection accepted");
     if (!ec) {
         std::make_shared<VeloxServ::HttpSession>(std::move(socket), routes_)->start();
     }
     accept_request();
+    spdlog::info("New connection accepted");
 }
 
 void VeloxServ::HttpServer::Impl::accept_request() {
