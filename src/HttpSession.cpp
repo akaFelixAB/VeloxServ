@@ -25,21 +25,21 @@ void VeloxServ::HttpSession::on_read(boost::system::error_code ec, std::size_t b
 void VeloxServ::HttpSession::read_request() {
     auto self = shared_from_this();
     http::async_read(
-        _socket,
-        _buffer,
-        _request,
+        socket_,
+        buffer_,
+        request_,
         beast::bind_front_handler(&HttpSession::on_read, shared_from_this())
     );
 }
 
 void VeloxServ::HttpSession::process_request() {
-    _socket.expires_after(std::chrono::seconds(30));
+    socket_.expires_after(std::chrono::seconds(30));
 
     // Save the keep-alive status and the request path for routing
-    bool keep_alive = _request.keep_alive();
+    bool keep_alive = request_.keep_alive();
 
     // Parse the request target (e.g., "/path/to/file?query=1")
-    std::string_view req_target = _request.target();
+    std::string_view req_target = request_.target();
     auto parsed_url = boost::urls::parse_origin_form(req_target);
 
     std::string path;
@@ -50,10 +50,10 @@ void VeloxServ::HttpSession::process_request() {
         path.assign(req_target.data(), req_target.size());
     }
 
-    auto matched_it = _routes->end();
+    auto matched_it = routes_->end();
     size_t max_len = 0;
 
-    for (auto it = _routes->begin(); it != _routes->end(); it++) {
+    for (auto it = routes_->begin(); it != routes_->end(); it++) {
         const std::string& route_prefix = it->first;
         if (path.rfind(route_prefix, 0) == 0) {  // Match if the path starts with the route prefix
             if (route_prefix.length() > max_len) {
@@ -63,21 +63,21 @@ void VeloxServ::HttpSession::process_request() {
         }
     }
 
-    spdlog::debug("Matched route: {}", matched_it != _routes->end() ? matched_it->first : "None");
+    spdlog::debug("Matched route: {}", matched_it != routes_->end() ? matched_it->first : "None");
 
     http::message_generator msg = http::response<http::string_body>{
         http::status::internal_server_error,
-        _request.version()
+        request_.version()
     };  // Default to 500
 
-    if (matched_it != _routes->end()) {
+    if (matched_it != routes_->end()) {
         try {
-            msg = matched_it->second(_request);  // Handle the request using the registered handler
+            msg = matched_it->second(request_);  // Handle the request using the registered handler
         } catch (const std::exception& e) {
             spdlog::error("Error handling request: {}", e.what());
             msg = make_error_response(
                 http::status::internal_server_error,
-                _request.version(),
+                request_.version(),
                 e.what(),
                 keep_alive
             );
@@ -85,7 +85,7 @@ void VeloxServ::HttpSession::process_request() {
     } else {
         msg = make_error_response(
             http::status::not_found,
-            _request.version(),
+            request_.version(),
             "404 Not Found",
             keep_alive
         );
@@ -94,7 +94,7 @@ void VeloxServ::HttpSession::process_request() {
     // Write the response back to the client
     auto self = shared_from_this();
     beast::async_write(
-        _socket,
+        socket_,
         std::move(msg),
         [self, keep_alive](boost::system::error_code ec, std::size_t bytes_transferred) {
             if (!ec && keep_alive) {

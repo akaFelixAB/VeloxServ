@@ -125,14 +125,14 @@ VeloxServ::http::message_generator VeloxServ::HttpServer::handle_static_request(
 
 void VeloxServ::HttpServer::load_routes_from_config(const ServerConfig& config) {
     spdlog::info("Loading routes from configuration");
-    for (const auto& r : config.routes) {
-        spdlog::info("Loading route: {}", r.path);
-        if (r.type == "static") {
+    for (const auto& r : config.routes_) {
+        spdlog::info("Loading route: {}", r.path_);
+        if (r.type_ == "static") {
             // Register a static file handler for the route
-            _pimpl->route(r.path, [this, r](const http::request<http::string_body>& req) {
-                return handle_static_request(req, r.root, r.index);
+            pimpl_->route(r.path_, [this, r](const http::request<http::string_body>& req) {
+                return handle_static_request(req, r.root_, r.index_);
             });
-        } else if (r.type == "proxy") {
+        } else if (r.type_ == "proxy") {
             // Register a proxy handler for the route
         }
     }
@@ -141,13 +141,13 @@ void VeloxServ::HttpServer::load_routes_from_config(const ServerConfig& config) 
 void VeloxServ::HttpServer::Impl::on_accept(boost::system::error_code ec, tcp::socket socket) {
     spdlog::info("New connection accepted");
     if (!ec) {
-        std::make_shared<VeloxServ::HttpSession>(std::move(socket), _routes)->start();
+        std::make_shared<VeloxServ::HttpSession>(std::move(socket), routes_)->start();
     }
     accept_request();
 }
 
 void VeloxServ::HttpServer::Impl::accept_request() {
-    _acceptor.async_accept(
+    acceptor_.async_accept(
         beast::bind_front_handler(
             &Impl::on_accept,
             shared_from_this()  // safe call to shared_from_this()

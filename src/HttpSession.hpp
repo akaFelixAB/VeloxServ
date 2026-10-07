@@ -48,14 +48,14 @@ inline http::response<http::string_body> make_error_response(
 
 // Manages the lifetime of an HTTP session for a single connection
 class HttpSession : public std::enable_shared_from_this<HttpSession> {
-    beast::tcp_stream _socket;                  // Socket for the session
-    http::request<http::string_body> _request;  // Request received from the client
-    beast::flat_buffer _buffer;                 // Buffer for reading
-    std::shared_ptr<const RouteTable> _routes;  // Map of routes to handlers
+    beast::tcp_stream socket_;                  // Socket for the session
+    http::request<http::string_body> request_;  // Request received from the client
+    beast::flat_buffer buffer_;                 // Buffer for reading
+    std::shared_ptr<const RouteTable> routes_;  // Map of routes to handlers
 
 public:
     HttpSession(tcp::socket socket, std::shared_ptr<const RouteTable> routes) :
-        _socket(std::move(socket)), _routes(std::move(routes)) {}
+        socket_(std::move(socket)), routes_(std::move(routes)) {}
 
     inline void start() {
         read_request();

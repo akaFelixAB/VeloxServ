@@ -50,26 +50,26 @@ class HttpServer {
 private:
     // The Pimpl idiom: hide implementation details in a separate class
     class Impl : public std::enable_shared_from_this<Impl> {
-        tcp::acceptor _acceptor;
-        ServerConfig _config;
-        std::shared_ptr<RouteTable> _routes;
+        tcp::acceptor acceptor_;
+        ServerConfig config_;
+        std::shared_ptr<RouteTable> routes_;
 
     public:
         Impl(net::io_context& ioc, ServerConfig config) :
-            _acceptor(ioc, tcp::endpoint(net::ip::make_address(config.host), config.port)),
-            _config(std::move(config)), _routes(std::make_shared<RouteTable>()) {}
+            acceptor_(ioc, tcp::endpoint(net::ip::make_address(config.host_), config.port_)),
+            config_(std::move(config)), routes_(std::make_shared<RouteTable>()) {}
 
         Impl(const Impl&) = delete;
         Impl& operator=(const Impl&) = delete;
         ~Impl() = default;
 
         void route(const std::string& path, Handler handler) {
-            (*_routes)[path] = std::move(handler);
+            (*routes_)[path] = std::move(handler);
         }
 
         void run() {
             spdlog::info("Starting HTTP server");
-            spdlog::info("Listening on {}:{}", _config.host, _config.port);
+            spdlog::info("Listening on {}:{}", config_.host_, config_.port_);
             accept_request();
         }
 
@@ -79,11 +79,11 @@ private:
     };  // class Impl
 
     // Manage shared_ptr of Impl to ensure proper lifetime management
-    std::shared_ptr<Impl> _pimpl;
+    std::shared_ptr<Impl> pimpl_;
 
     // Get the MIME type based on the file extension
     const std::unordered_map<std::string_view, std::string, StringHash, std::equal_to<>>
-        _mime_types = {
+        mime_types = {
             {".htm", "text/html"},
             {".html", "text/html"},
             {".php", "text/html"},
@@ -112,8 +112,8 @@ private:
         beast::string_view const ext = path.substr(pos);
 
         // Find the MIME type in the map
-        auto it = _mime_types.find(ext);
-        if (it != _mime_types.end()) {
+        auto it = mime_types.find(ext);
+        if (it != mime_types.end()) {
             return it->second;
         }
 
@@ -130,7 +130,7 @@ private:
 public:
     // Automatically create a HttpServer on the heap and return a shared_ptr to it
     HttpServer(net::io_context& ioc, const ServerConfig& config) :
-        _pimpl(std::make_shared<Impl>(ioc, config)) {
+        pimpl_(std::make_shared<Impl>(ioc, config)) {
         load_routes_from_config(config);
     }
 
@@ -138,11 +138,11 @@ public:
 
     // Forward the route and run calls to the Impl instance
     void route(const std::string& path, Handler handler) {
-        _pimpl->route(path, std::move(handler));
+        pimpl_->route(path, std::move(handler));
     }
 
     void run() {
-        _pimpl->run();
+        pimpl_->run();
     }
 };  // class HttpServ
 

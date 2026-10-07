@@ -25,35 +25,35 @@ constexpr size_t operator""_MB(unsigned long long mb) {
 
 // Route configuration
 struct RouteConfig {
-    std::string path;
-    std::string type;      // "static", "proxy", etc.
-    std::string root;      // Static file root directory
-    std::string index;     // Default index file
-    std::string upstream;  // Reverse proxy target address
+    std::string path_;
+    std::string type_;      // "static", "proxy", etc.
+    std::string root_;      // Static file root directory
+    std::string index_;     // Default index file
+    std::string upstream_;  // Reverse proxy target address
 };
 
 struct LoggingConfig {
-    bool console_output = true;  // Enable console logging by default
-    bool file_output = true;     // Enable file logging by default
-    std::string log_file = "logs/serv.log";
-    size_t max_file_size = 10_MB;  // Maximum file size is 10 MB
-    int max_files = 3;
+    bool console_output_ = true;  // Enable console logging by default
+    bool file_output_ = true;     // Enable file logging by default
+    std::string log_file_ = "logs/serv.log";
+    size_t max_file_size_ = 10_MB;  // Maximum file size is 10 MB
+    int max_files_ = 3;
 };
 
 // Server configuration
 struct ServerConfig {
-    std::string name = "VeloxServ";  // Server name
-    std::string host = "127.0.0.1";
-    unsigned short port = 8080;
-    int timeout_seconds = 30;
-    int max_connections = 10000;
-    std::vector<RouteConfig> routes;
-    LoggingConfig logging;  // Logging configuration
+    std::string name_ = "VeloxServ";  // Server name
+    std::string host_ = "127.0.0.1";
+    unsigned short port_ = 8080;
+    int timeout_seconds_ = 30;
+    int max_connections_ = 10000;
+    std::vector<RouteConfig> routes_;
+    LoggingConfig logging_;  // Logging configuration
 };
 
 class ConfigManager {
 private:
-    ServerConfig _config;
+    ServerConfig config_;
 
 public:
     ConfigManager() = default;
@@ -62,7 +62,7 @@ public:
     void parse_file(const std::string& file_path);
 
     [[nodiscard]] const ServerConfig& get_config() const {
-        return _config;
+        return config_;
     }
 };  // class ConfigManager
 

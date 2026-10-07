@@ -70,12 +70,12 @@ void init_logging(const VeloxServ::ServerConfig& config) {
     std::vector<spdlog::sink_ptr> sinks;
 
     // Dynamic file Sink
-    if (config.logging.file_output) {
+    if (config.logging_.file_output_) {
         // Create a rotating file sink
         auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
-            config.logging.log_file,
-            config.logging.max_file_size,
-            config.logging.max_files
+            config.logging_.log_file_,
+            config.logging_.max_file_size_,
+            config.logging_.max_files_
         );
         // Set the file sink to use the custom JSON formatter
         file_sink->set_formatter(std::make_unique<JsonFormatter>());
@@ -83,7 +83,7 @@ void init_logging(const VeloxServ::ServerConfig& config) {
     }
 
     // Dynamic console Sink
-    if (config.logging.console_output) {
+    if (config.logging_.console_output_) {
         auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
         // Set the console sink to use a human-readable colored format
         console_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [thread %t] %v");
@@ -92,7 +92,7 @@ void init_logging(const VeloxServ::ServerConfig& config) {
 
     // Create an asynchronous logger with dynamic sinks
     auto logger = std::make_shared<spdlog::async_logger>(
-        config.name,  // Use log_file as the logger name
+        config.name_,  // Use log_file as the logger name
         sinks.begin(),
         sinks.end(),
         spdlog::thread_pool(),
