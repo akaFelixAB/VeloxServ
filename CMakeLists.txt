@@ -34,21 +34,26 @@ target_link_libraries(VeloxServ PRIVATE
     nlohmann_json::nlohmann_json
     spdlog::spdlog)
 
+# Testing
 include(CTest)
 enable_testing()
 
-add_executable(smoke_test tests/smoke_test.cpp)
-target_link_libraries(smoke_test PRIVATE 
-    Boost::asio 
-    Boost::beast
-    Boost::url
-    tomlplusplus::tomlplusplus
-    nlohmann_json::nlohmann_json
-    spdlog::spdlog)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
-add_test(NAME SmokeTest COMMAND smoke_test)
-set_property(TEST SmokeTest PROPERTY LABELS smoke)
-
+add_test(
+    NAME SmokeTest
+    COMMAND
+        ${Python3_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/smoke_test.py
+        $<TARGET_FILE:VeloxServ>
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+set_tests_properties(
+    SmokeTest
+    PROPERTIES
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        TIMEOUT 30
+)
 
 # if(WIN32)
 #     # Windows 
