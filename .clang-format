@@ -1,0 +1,123 @@
+---
+Language: Cpp
+BasedOnStyle: LLVM
+
+# Basic Indentation and Formatting
+IndentWidth: 4
+ContinuationIndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 100
+AccessModifierOffset: -4
+NamespaceIndentation: None
+IndentCaseLabels: false
+IndentPPDirectives: None
+
+# Braces
+BreakBeforeBraces: Attach
+BraceWrapping:
+  AfterClass: false
+  AfterControlStatement: Never
+  AfterEnum: false
+  AfterFunction: false
+  AfterNamespace: false
+  AfterStruct: false
+  AfterUnion: false
+  BeforeCatch: false
+  BeforeElse: false
+  IndentBraces: false
+BreakAfterOpenBracketBracedList: true
+BreakBeforeCloseBracketBracedList: true
+
+# Functions and Control Statements
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortBlocksOnASingleLine: Never
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakAfterReturnType: None
+AlwaysBreakBeforeMultilineStrings: false
+BreakBeforeBinaryOperators: None
+BreakConstructorInitializers: AfterColon
+ConstructorInitializerIndentWidth: 4
+PackConstructorInitializers: BinPack
+PenaltyBreakAssignment: 20
+PenaltyBreakBeforeFirstCallParameter: 19
+PenaltyBreakComment: 300
+PenaltyReturnTypeOnItsOwnLine: 60
+
+# Pointers and References
+DerivePointerAlignment: false
+PointerAlignment: Left
+ReferenceAlignment: Left
+SpaceAroundPointerQualifiers: Default
+
+# Spaces
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: ControlStatements
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyBlock: false
+SpacesBeforeTrailingComments: 2
+SpacesInAngles: false
+SpacesInContainerLiterals: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+
+# Functions Calling and Parameters
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: true
+BinPackArguments: false
+BinPackParameters: false
+BreakAfterOpenBracketFunction: true
+BreakBeforeCloseBracketFunction: true
+PenaltyBreakOpenParenthesis: 0
+
+# Lists and Initializers
+Cpp11BracedListStyle: true
+SpaceBeforeJsonColon: false
+
+# Classes and Enumerations
+BreakBeforeInheritanceComma: false
+BreakConstructorInitializersBeforeComma: false
+
+# Includes
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^".*"'
+    Priority: 1
+    SortPriority: 1
+  - Regex: '^<boost/'
+    Priority: 2
+    SortPriority: 2
+  - Regex: '^<(spdlog|fmt|toml\+\+|nlohmann)/'
+    Priority: 3
+    SortPriority: 3
+  - Regex: '^<.*'
+    Priority: 4
+    SortPriority: 4
+
+# Comments
+ReflowComments: Never
+FixNamespaceComments: false
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 0
+
+# C++ Standard
+Standard: c++20
+
+# Macros
+MacroBlockBegin: ''
+MacroBlockEnd: ''
+StatementMacros: []
+WhitespaceSensitiveMacros:
+  - BOOST_PP_STRINGIZE
+  - BOOST_PP_VARIADIC_TO_ARRAY
+...
