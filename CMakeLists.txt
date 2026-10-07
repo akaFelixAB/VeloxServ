@@ -13,7 +13,6 @@ add_executable(VeloxServ src/main.cpp
     src/HttpSession.cpp
     src/HttpServer.cpp
     src/ConfigManager.cpp)
-
 target_link_libraries(VeloxServ PRIVATE 
     Boost::asio 
     Boost::beast
@@ -25,11 +24,23 @@ target_link_libraries(VeloxServ PRIVATE
 include(CTest)
 enable_testing()
 
+add_executable(smoke_test tests/smoke_test.cpp)
+target_link_libraries(smoke_test PRIVATE 
+    Boost::asio 
+    Boost::beast
+    Boost::url
+    tomlplusplus::tomlplusplus
+    nlohmann_json::nlohmann_json
+    spdlog::spdlog)
+
+add_test(NAME SmokeTest COMMAND smoke_test)
+set_property(TEST SmokeTest PROPERTY LABELS smoke)
+
 
 # if(WIN32)
 #     # Windows 
 #     install(TARGETS VeloxServ DESTINATION bin)
-#     install(FILES default.toml DESTINATION bin) # 或者放在 config/
+#     install(FILES default.toml DESTINATION bin)
 # else()
 #     # POSIX
 #     install(TARGETS VeloxServ DESTINATION bin)
