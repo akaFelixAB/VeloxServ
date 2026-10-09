@@ -16,9 +16,6 @@
 
 #include <spdlog/spdlog.h>
 
-#include <filesystem>
-#include <iostream>
-
 void VeloxServ::ConfigManager::parse_file(const std::string& file_path) {
     try {
         spdlog::info("Loading configuration from {}", file_path);

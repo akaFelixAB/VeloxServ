@@ -14,14 +14,11 @@
 
 #include "ConfigManager.hpp"
 #include "HttpServer.hpp"
-#include "HttpSession.hpp"
-#include "logging.hpp"
+#include "Logger.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/asio/signal_set.hpp>  // For handling signals like SIGINT and SIGTERM
 #include <boost/beast.hpp>
-
-#include <iostream>
 
 // Handle termination signals for graceful shutdown
 void handle_signal(boost::asio::io_context& ioc, boost::system::error_code ec, int signum) {
@@ -36,10 +33,12 @@ int main(int argc, char* argv[]) {
     namespace net = boost::asio;
     using tcp = net::ip::tcp;
 
-    // Initialize bootstrap logging for early startup messages
-    init_bootstrap_logging();
-
     std::string config_path = "default.toml";
+
+    // Logger instance for logging throughout the application
+    VeloxServ::Logger logger;
+    // Initialize bootstrap logging for early startup messages
+    logger.initialize_bootstrap();
 
     try {
         VeloxServ::ConfigManager config_mgr;
@@ -47,7 +46,7 @@ int main(int argc, char* argv[]) {
         const auto& cfg = config_mgr.get_config();
 
         // Initialize logging
-        init_logging(cfg);
+        logger.initialize(cfg);
 
         net::io_context ioc;
 
@@ -66,11 +65,9 @@ int main(int argc, char* argv[]) {
         spdlog::info("Server event loop stopped cleanly.");
     } catch (const std::exception& e) {
         spdlog::critical("Exception: {}", e.what());
-        shutdown_logging();
         return EXIT_FAILURE;
     }
 
     spdlog::info("Flushing logs and shutting down...");
-    shutdown_logging();
     return EXIT_SUCCESS;
 }
