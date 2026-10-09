@@ -1,0 +1,22 @@
+name: License Header Check
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  check-license:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check License Header
+        uses: apache/skywalking-eyes/header@main      # always prefer to use a revision instead of `main`.
+        with:
+          log: info # Set the log level. The default value is `info`.
+          config: .licenserc.yaml # Set the config file. The default value is `.licenserc.yaml`.
+          # token: # optional: the token that license eye uses when it needs to comment on the pull request. Set to empty ("") to disable commenting on pull request. The default value is ${{ github.token }}
+          # mode: # optional: Which mode License-Eye should be run in. Choices are `check`, `fix` or `diff`. The default value is `check`.
