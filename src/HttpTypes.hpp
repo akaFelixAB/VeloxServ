@@ -1,10 +1,11 @@
 #pragma once
 
+#include <boost/beast.hpp>
+
 #include <functional>
 #include <map>
-#include <string>
 #include <memory>
-#include <boost/beast.hpp>
+#include <string>
 
 namespace VeloxServ {
 

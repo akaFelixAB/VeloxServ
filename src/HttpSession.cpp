@@ -17,6 +17,7 @@
 #include "ResponseFactory.hpp"
 
 #include <boost/url.hpp>
+
 #include <spdlog/spdlog.h>
 
 void VeloxServ::HttpSession::on_read(boost::system::error_code ec, std::size_t bytes_transferred) {
@@ -86,11 +87,7 @@ void VeloxServ::HttpSession::process_request() {
             );
         }
     } else {
-        msg = ResponseFactory::not_found(
-            request_.version(),
-            keep_alive,
-            "404 Not Found"
-        );
+        msg = ResponseFactory::not_found(request_.version(), keep_alive, "404 Not Found");
     }
 
     // Write the response back to the client

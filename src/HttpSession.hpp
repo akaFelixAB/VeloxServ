@@ -14,12 +14,12 @@
 
 #pragma once
 
+#include "HttpTypes.hpp"
+
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 
 #include <memory>
-
-#include "HttpTypes.hpp"
 
 namespace VeloxServ {
 
@@ -30,9 +30,9 @@ using tcp = net::ip::tcp;
 
 // Manages the lifetime of an HTTP session for a single connection
 class HttpSession : public std::enable_shared_from_this<HttpSession> {
-    beast::tcp_stream socket_;                  // Socket for the session
-    http::request<http::string_body> request_;  // Request received from the client
-    beast::flat_buffer buffer_;                 // Buffer for reading
+    beast::tcp_stream socket_;                             // Socket for the session
+    http::request<http::string_body> request_;             // Request received from the client
+    beast::flat_buffer buffer_;                            // Buffer for reading
     std::shared_ptr<const VeloxServ::RouteTable> routes_;  // Map of routes to handlers
 
 public:

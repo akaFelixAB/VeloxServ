@@ -2,14 +2,12 @@
 
 #include <fmt/chrono.h>
 #include <fmt/format.h>
-
+#include <nlohmann/json.hpp>
 #include <spdlog/async.h>
 #include <spdlog/pattern_formatter.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
-
-#include <nlohmann/json.hpp>
 
 #include <iterator>
 #include <memory>
@@ -23,30 +21,18 @@ using json = nlohmann::json;
 
 class JsonFormatter final : public spdlog::formatter {
 public:
-    void format(
-        const spdlog::details::log_msg& message,
-        spdlog::memory_buf_t& destination
-    ) override {
+    void
+    format(const spdlog::details::log_msg& message, spdlog::memory_buf_t& destination) override {
         const auto level = spdlog::level::to_string_view(message.level);
-        const std::string level_str {
-            level.data(),
-            level.size()
-        };
+        const std::string level_str{level.data(), level.size()};
 
-        const std::string logger_name {
-            message.logger_name.data(),
-            message.logger_name.size()
-        };
+        const std::string logger_name{message.logger_name.data(), message.logger_name.size()};
 
-        const std::string payload {
-            message.payload.data(),
-            message.payload.size()
-        };
+        const std::string payload{message.payload.data(), message.payload.size()};
 
-        const std::string timestamp =
-            fmt::format("{:%Y-%m-%dT%H:%M:%S.%e}Z", message.time);
+        const std::string timestamp = fmt::format("{:%Y-%m-%dT%H:%M:%S.%e}Z", message.time);
 
-        const json record {
+        const json record{
             {"timestamp", timestamp},
             {"level", level_str},
             {"logger", logger_name},
@@ -54,11 +40,7 @@ public:
             {"thread_id", message.thread_id}
         };
 
-        fmt::format_to(
-            std::back_inserter(destination),
-            "{}\n",
-            record.dump()
-        );
+        fmt::format_to(std::back_inserter(destination), "{}\n", record.dump());
     }
 
     [[nodiscard]] std::unique_ptr<formatter> clone() const override {
@@ -79,9 +61,7 @@ void Logger::initialize_bootstrap() {
         return;
     }
 
-    spdlog::set_pattern(
-        "[%Y-%m-%d %H:%M:%S] [BOOTSTRAP] [%^%l%$] %v"
-    );
+    spdlog::set_pattern("[%Y-%m-%d %H:%M:%S] [BOOTSTRAP] [%^%l%$] %v");
 
     spdlog::set_level(spdlog::level::info);
 
@@ -98,35 +78,27 @@ void Logger::initialize(const ServerConfig& config) {
     std::vector<spdlog::sink_ptr> sinks;
 
     if (config.logging_.file_output_) {
-        auto file_sink =
-            std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
-                config.logging_.log_file_,
-                config.logging_.max_file_size_,
-                config.logging_.max_files_
-            );
-
-        file_sink->set_formatter(
-            std::make_unique<JsonFormatter>()
+        auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
+            config.logging_.log_file_,
+            config.logging_.max_file_size_,
+            config.logging_.max_files_
         );
+
+        file_sink->set_formatter(std::make_unique<JsonFormatter>());
 
         sinks.push_back(file_sink);
     }
 
     if (config.logging_.console_output_) {
-        auto console_sink =
-            std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+        auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 
-        console_sink->set_pattern(
-            "[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [thread %t] %v"
-        );
+        console_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [thread %t] %v");
 
         sinks.push_back(console_sink);
     }
 
     if (sinks.empty()) {
-        throw std::runtime_error(
-            "Logger requires at least one enabled sink"
-        );
+        throw std::runtime_error("Logger requires at least one enabled sink");
     }
 
     auto async_logger = std::make_shared<spdlog::async_logger>(
