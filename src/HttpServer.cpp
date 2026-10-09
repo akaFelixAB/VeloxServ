@@ -30,11 +30,11 @@ VeloxServ::http::message_generator VeloxServ::HttpServer::handle_static_request(
     auto result = boost::urls::parse_origin_form(req.target());
     if (result.has_error()) {
         spdlog::warn("Invalid URL format: {}", req.target());
-        http::response<http::string_body> res{http::status::bad_request, req.version()};
-        res.set(http::field::content_type, "text/plain");
-        res.body() = "Invalid Request Target";
-        res.prepare_payload();
-        return res;
+        return ResponseFactory::bad_request(
+            req.version(),
+            req.keep_alive(),
+            "400 Bad Request: Invalid URL format"
+        );
     }
 
     boost::urls::url_view uv = result.value();
