@@ -31,11 +31,6 @@ namespace http = beast::http;
 namespace net = boost::asio;
 using tcp = net::ip::tcp;
 
-// Route handler type: takes a request and returns a response
-using Handler = std::function<http::message_generator(const http::request<http::string_body>&)>;
-// Type alias for route table
-using RouteTable = std::map<std::string, Handler>;
-
 struct StringHash {
     using is_transparent = void;
     std::size_t operator()(std::string_view txt) const {
