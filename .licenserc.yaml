@@ -7,7 +7,15 @@ header:
     - 'dist'
     - 'licenses'
     - '**/*.md'
+    - '**/*.yaml'
+    - '**/*.yml'
+    - '**/*.json'
+    - '**/*.xml'
+    - '**/*.toml'
     - 'LICENSE'
     - 'NOTICE'
+    - '.git/**'
+    - 'build/**'
+    - 'public/**'
 
   comment: on-failure
