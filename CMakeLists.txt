@@ -22,6 +22,23 @@ find_package(spdlog REQUIRED)
 set(CMAKE_EXPORT_NO_PACKAGE_REGISTRY ON)
 set(CMAKE_NO_SYSTEM_FROM_IMPORTED ON) 
 
+add_library(VeloxServLib INTERFACE)
+target_sources(VeloxServLib
+    INTERFACE
+        FILE_SET HEADERS
+        BASE_DIRS src
+        FILES
+            src/ConfigManager.hpp
+            src/HttpTypes.hpp
+            src/ResponseFactory.hpp
+            src/HttpServer.hpp
+            src/HttpSession.hpp
+            src/Logger.hpp
+)
+# Enable interface header set verification to ensure that all headers
+# are correctly included in the target's interface
+set_property(TARGET VeloxServLib PROPERTY VERIFY_INTERFACE_HEADER_SETS ON)
+
 add_executable(VeloxServ src/main.cpp
     src/HttpSession.cpp
     src/HttpServer.cpp
@@ -43,6 +60,7 @@ enable_testing()
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
+# Smoke Test
 add_test(
     NAME SmokeTest
     COMMAND
