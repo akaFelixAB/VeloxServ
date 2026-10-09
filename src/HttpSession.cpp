@@ -14,6 +14,9 @@
 
 #include "HttpSession.hpp"
 
+#include "ResponseFactory.hpp"
+
+#include <boost/url.hpp>
 #include <spdlog/spdlog.h>
 
 void VeloxServ::HttpSession::on_read(boost::system::error_code ec, std::size_t bytes_transferred) {
@@ -65,29 +68,28 @@ void VeloxServ::HttpSession::process_request() {
 
     spdlog::debug("Matched route: {}", matched_it != routes_->end() ? matched_it->first : "None");
 
-    http::message_generator msg = http::response<http::string_body>{
-        http::status::internal_server_error,
-        request_.version()
-    };  // Default to 500
+    http::message_generator msg = ResponseFactory::internal_server_error(
+        request_.version(),
+        keep_alive,
+        "Internal Server Error"
+    );
 
     if (matched_it != routes_->end()) {
         try {
             msg = matched_it->second(request_);  // Handle the request using the registered handler
         } catch (const std::exception& e) {
             spdlog::error("Error handling request: {}", e.what());
-            msg = make_error_response(
-                http::status::internal_server_error,
+            msg = ResponseFactory::internal_server_error(
                 request_.version(),
-                e.what(),
-                keep_alive
+                keep_alive,
+                "Internal Server Error"
             );
         }
     } else {
-        msg = make_error_response(
-            http::status::not_found,
+        msg = ResponseFactory::not_found(
             request_.version(),
-            "404 Not Found",
-            keep_alive
+            keep_alive,
+            "404 Not Found"
         );
     }
 

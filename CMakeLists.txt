@@ -27,7 +27,8 @@ add_executable(VeloxServ src/main.cpp
     src/HttpServer.cpp
     src/ConfigManager.cpp
     src/HttpTypes.hpp
-    src/Logger.cpp)
+    src/Logger.cpp
+    src/ResponseFactory.cpp)
 target_link_libraries(VeloxServ PRIVATE 
     Boost::asio 
     Boost::beast

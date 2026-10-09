@@ -16,9 +16,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
-#include <boost/url.hpp>
 
-#include <map>
 #include <memory>
 
 #include "HttpTypes.hpp"
@@ -28,19 +26,7 @@ namespace VeloxServ {
 namespace beast = boost::beast;
 namespace http = beast::http;
 namespace net = boost::asio;
-namespace urls = boost::urls;
 using tcp = net::ip::tcp;
-
-inline http::response<http::string_body> make_error_response(
-    http::status status, unsigned version, std::string_view message, bool keep_alive = false
-) {
-    http::response<http::string_body> res{status, version};
-    res.set(http::field::content_type, "text/plain");
-    res.keep_alive(keep_alive);
-    res.body() = message;
-    res.prepare_payload();
-    return res;
-}
 
 // Manages the lifetime of an HTTP session for a single connection
 class HttpSession : public std::enable_shared_from_this<HttpSession> {
