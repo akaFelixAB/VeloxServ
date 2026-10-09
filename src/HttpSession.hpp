@@ -18,9 +18,10 @@
 #include <boost/beast.hpp>
 #include <boost/url.hpp>
 
-#include <functional>
 #include <map>
 #include <memory>
+
+#include "HttpTypes.hpp"
 
 namespace VeloxServ {
 
@@ -29,11 +30,6 @@ namespace http = beast::http;
 namespace net = boost::asio;
 namespace urls = boost::urls;
 using tcp = net::ip::tcp;
-
-// Route handler type: takes a request and returns a response
-using Handler = std::function<http::message_generator(const http::request<http::string_body>&)>;
-// Type alias for route table
-using RouteTable = std::map<std::string, Handler>;
 
 inline http::response<http::string_body> make_error_response(
     http::status status, unsigned version, std::string_view message, bool keep_alive = false
@@ -51,10 +47,10 @@ class HttpSession : public std::enable_shared_from_this<HttpSession> {
     beast::tcp_stream socket_;                  // Socket for the session
     http::request<http::string_body> request_;  // Request received from the client
     beast::flat_buffer buffer_;                 // Buffer for reading
-    std::shared_ptr<const RouteTable> routes_;  // Map of routes to handlers
+    std::shared_ptr<const VeloxServ::RouteTable> routes_;  // Map of routes to handlers
 
 public:
-    HttpSession(tcp::socket socket, std::shared_ptr<const RouteTable> routes) :
+    HttpSession(tcp::socket socket, std::shared_ptr<const VeloxServ::RouteTable> routes) :
         socket_(std::move(socket)), routes_(std::move(routes)) {}
 
     inline void start() {

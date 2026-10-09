@@ -25,7 +25,8 @@ set(CMAKE_NO_SYSTEM_FROM_IMPORTED ON)
 add_executable(VeloxServ src/main.cpp
     src/HttpSession.cpp
     src/HttpServer.cpp
-    src/ConfigManager.cpp)
+    src/ConfigManager.cpp
+    src/HttpTypes.hpp)
 target_link_libraries(VeloxServ PRIVATE 
     Boost::asio 
     Boost::beast

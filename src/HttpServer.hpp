@@ -22,10 +22,7 @@
 
 #include <spdlog/spdlog.h>
 
-#include <map>
-#include <memory>
-#include <string_view>
-#include <unordered_map>
+#include "HttpTypes.hpp"
 
 namespace VeloxServ {
 
