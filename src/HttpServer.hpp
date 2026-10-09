@@ -15,6 +15,7 @@
 #pragma once
 
 #include "ConfigManager.hpp"
+#include "HttpTypes.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
@@ -22,22 +23,12 @@
 
 #include <spdlog/spdlog.h>
 
-#include <map>
-#include <memory>
-#include <string_view>
-#include <unordered_map>
-
 namespace VeloxServ {
 
 namespace beast = boost::beast;
 namespace http = beast::http;
 namespace net = boost::asio;
 using tcp = net::ip::tcp;
-
-// Route handler type: takes a request and returns a response
-using Handler = std::function<http::message_generator(const http::request<http::string_body>&)>;
-// Type alias for route table
-using RouteTable = std::map<std::string, Handler>;
 
 struct StringHash {
     using is_transparent = void;

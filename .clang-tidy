@@ -1,7 +1,6 @@
 ---
 Checks: >
   -*,
-  clang-analyzer-*, 
   bugprone-argument-comment,
   bugprone-bad-signal-to-kill-thread,
   bugprone-dangling-handle,

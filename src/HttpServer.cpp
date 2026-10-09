@@ -15,6 +15,7 @@
 #include "HttpServer.hpp"
 
 #include "HttpSession.hpp"
+#include "ResponseFactory.hpp"
 
 #include <spdlog/spdlog.h>
 
@@ -29,11 +30,11 @@ VeloxServ::http::message_generator VeloxServ::HttpServer::handle_static_request(
     auto result = boost::urls::parse_origin_form(req.target());
     if (result.has_error()) {
         spdlog::warn("Invalid URL format: {}", req.target());
-        http::response<http::string_body> res{http::status::bad_request, req.version()};
-        res.set(http::field::content_type, "text/plain");
-        res.body() = "Invalid Request Target";
-        res.prepare_payload();
-        return res;
+        return ResponseFactory::bad_request(
+            req.version(),
+            req.keep_alive(),
+            "400 Bad Request: Invalid URL format"
+        );
     }
 
     boost::urls::url_view uv = result.value();
@@ -52,11 +53,10 @@ VeloxServ::http::message_generator VeloxServ::HttpServer::handle_static_request(
 
     if (contains_dot_dot) {
         spdlog::warn("Illegal request-target detected: {}", req.target());
-        return make_error_response(
-            http::status::bad_request,
+        return ResponseFactory::forbidden(
             req.version(),
-            "Illegal request-target",
-            req.keep_alive()
+            req.keep_alive(),
+            "403 Forbidden: Illegal request-target"
         );
     }
 
@@ -78,11 +78,11 @@ VeloxServ::http::message_generator VeloxServ::HttpServer::handle_static_request(
     auto [root_end, dummy] = std::mismatch(base_path.begin(), base_path.end(), target_path.begin());
     if (root_end != base_path.end()) {
         spdlog::warn("Path traversal attempt blocked: {}", target_path.string());
-        http::response<http::string_body> res{http::status::forbidden, req.version()};
-        res.set(http::field::content_type, "text/plain");
-        res.body() = "403 Forbidden";
-        res.prepare_payload();
-        return res;
+        return ResponseFactory::forbidden(
+            req.version(),
+            req.keep_alive(),
+            "403 Forbidden: Path traversal attempt"
+        );
     }
 
     std::string full_path = target_path.string();
@@ -94,20 +94,18 @@ VeloxServ::http::message_generator VeloxServ::HttpServer::handle_static_request(
 
     if (ec == beast::errc::no_such_file_or_directory) {
         spdlog::warn("File not found: {}", full_path);
-        http::response<http::string_body> res{http::status::not_found, req.version()};
-        res.set(http::field::content_type, "text/plain");
-        res.body() = "404 Not Found";
-        res.prepare_payload();
-        return res;
+        return ResponseFactory::not_found(
+            req.version(),
+            req.keep_alive()
+        );
     }
 
     if (ec) {
         spdlog::error("Server Error: {}", ec.message());
-        http::response<http::string_body> res{http::status::internal_server_error, req.version()};
-        res.set(http::field::content_type, "text/plain");
-        res.body() = "Server Error: " + ec.message();
-        res.prepare_payload();
-        return res;
+        return ResponseFactory::internal_server_error(
+            req.version(),
+            req.keep_alive()
+        );
     }
 
     http::response<http::file_body> res{
