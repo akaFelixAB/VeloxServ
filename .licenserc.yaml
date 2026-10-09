@@ -1,0 +1,26 @@
+header:
+  license:
+    spdx-id: Apache-2.0
+    copyright-owner: Felix Huang
+
+  paths-ignore:
+    - 'dist'
+    - 'licenses'
+    - '**/*.md'
+    - '**/*.yaml'
+    - '**/*.yml'
+    - '**/*.json'
+    - '**/*.xml'
+    - '**/*.toml'
+    - 'LICENSE'
+    - 'NOTICE'
+    - '.git/**'
+    - '.github/**'
+    - '.gitignore'
+    - '.gitattributes'
+    - '.clang-format'
+    - '.clang-tidy'
+    - 'build/**'
+    - 'public/**'
+
+  comment: on-failure
