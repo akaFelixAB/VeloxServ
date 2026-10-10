@@ -15,6 +15,7 @@
 #pragma once
 
 #include <toml++/toml.hpp>
+#include <unordered_map>
 
 namespace VeloxServ {
 
@@ -36,8 +37,8 @@ struct RouteConfig {
 };
 
 struct LoggingConfig {
-    bool console_output_ = true;  // Enable console logging by default
-    bool file_output_ = true;     // Enable file logging by default
+    bool console_output_ = true;    // Enable console logging by default
+    bool file_output_ = true;       // Enable file logging by default
     std::string log_file_ = "logs/serv.log";
     size_t max_file_size_ = 10_MB;  // Maximum file size is 10 MB
     int max_files_ = 3;
@@ -59,11 +60,10 @@ public:
     ConfigLoader() = default;
     ~ConfigLoader() = default;
 
-    ServerConfig load_file(const std::string& file_path);
-
-private:
-    std::optional<VeloxServ::RouteType> route_type_from_string(std::string_view value);
-    std::string_view route_type_to_string(VeloxServ::RouteType type);
+    [[nodiscard]] ServerConfig load_file(const std::string& file_path) const;
+    
+    [[nodiscard]] std::optional<RouteType> route_type_from_string(std::string_view value) const;
+    [[nodiscard]] std::string_view route_type_to_string(RouteType type) const;
 };  // class ConfigLoader
 
 }  // namespace VeloxServ

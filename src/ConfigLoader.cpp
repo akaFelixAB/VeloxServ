@@ -13,12 +13,13 @@
 // limitations under the License.
 
 #include "ConfigLoader.hpp"
+#include "ConfigValidator.hpp"
 
 #include <spdlog/spdlog.h>
 
 namespace VeloxServ {
 
-std::optional<RouteType> ConfigLoader::route_type_from_string(std::string_view value) {
+std::optional<RouteType> ConfigLoader::route_type_from_string(std::string_view value) const {
     if (value == "static") {
         return RouteType::Static;
     } else if (value == "proxy") {
@@ -29,7 +30,7 @@ std::optional<RouteType> ConfigLoader::route_type_from_string(std::string_view v
     }
 }
 
-std::string_view ConfigLoader::route_type_to_string(RouteType type) {
+std::string_view ConfigLoader::route_type_to_string(RouteType type) const {
     switch (type) {
     case RouteType::Static:
         return "static";
@@ -40,7 +41,7 @@ std::string_view ConfigLoader::route_type_to_string(RouteType type) {
     }
 }
 
-ServerConfig ConfigLoader::load_file(const std::string& file_path) {
+ServerConfig ConfigLoader::load_file(const std::string& file_path) const {
     ServerConfig config;
     try {
         spdlog::info("Loading configuration from {}", file_path);
@@ -87,16 +88,24 @@ ServerConfig ConfigLoader::load_file(const std::string& file_path) {
                 }
             }
         }
+
+        // Validate the configuration
+        ConfigValidator validator;
+        auto diagnostics = validator.validate(config);
+
+        if (!diagnostics.empty()) {
+            throw ConfigException(diagnostics);
+        }
+
+        return config;
     } catch (const toml::parse_error& err) {
         throw std::runtime_error(
             "TOML Parse Error: " + std::string(err.description()) + " at line " +
             std::to_string(err.source().begin.line)
         );
-    } catch (const std::exception& e) {
-        throw std::runtime_error("Config Load Failed: " + std::string(e.what()));
+    } catch (const std::exception& err) {
+        throw std::runtime_error("Config Load Failed: " + std::string(err.what()));
     }
-
-    return config;
 }
 
-}
+}  // namespace VeloxServ

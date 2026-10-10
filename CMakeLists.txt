@@ -43,6 +43,9 @@ target_sources(VeloxServLib
         BASE_DIRS src
         FILES
             src/ConfigLoader.hpp
+            src/ConfigValidator.hpp
+            src/ConfigDiagnostic.hpp
+            src/ConfigException.hpp
             src/HttpTypes.hpp
             src/ResponseFactory.hpp
             src/HttpServer.hpp
@@ -57,6 +60,9 @@ add_executable(VeloxServ src/main.cpp
     src/HttpSession.cpp
     src/HttpServer.cpp
     src/ConfigLoader.cpp
+    src/ConfigValidator.cpp
+    src/ConfigDiagnostic.hpp
+    src/ConfigException.cpp
     src/HttpTypes.hpp
     src/Logger.cpp
     src/ResponseFactory.cpp)
