@@ -23,10 +23,13 @@ constexpr size_t operator""_MB(unsigned long long mb) {
     return mb * 1024ULL * 1024ULL;  // A megabyte is 1024 * 1024 bytes
 }
 
+// Route type enumeration
+enum class RouteType { Static, Proxy };
+
 // Route configuration
 struct RouteConfig {
     std::string path_;
-    std::string type_;      // "static", "proxy", etc.
+    RouteType type_;        // "static", "proxy", etc.
     std::string root_;      // Static file root directory
     std::string index_;     // Default index file
     std::string upstream_;  // Reverse proxy target address
@@ -44,26 +47,23 @@ struct LoggingConfig {
 struct ServerConfig {
     std::string name_ = "VeloxServ";  // Server name
     std::string host_ = "127.0.0.1";
-    unsigned short port_ = 8080;
+    unsigned int port_ = 8080;
     int timeout_seconds_ = 30;
     int max_connections_ = 10000;
     std::vector<RouteConfig> routes_;
     LoggingConfig logging_;  // Logging configuration
 };
 
-class ConfigManager {
-private:
-    ServerConfig config_;
-
+class ConfigLoader {
 public:
-    ConfigManager() = default;
-    ~ConfigManager() = default;
+    ConfigLoader() = default;
+    ~ConfigLoader() = default;
 
-    void parse_file(const std::string& file_path);
+    ServerConfig load_file(const std::string& file_path);
 
-    [[nodiscard]] const ServerConfig& get_config() const {
-        return config_;
-    }
-};  // class ConfigManager
+private:
+    std::optional<VeloxServ::RouteType> route_type_from_string(std::string_view value);
+    std::string_view route_type_to_string(VeloxServ::RouteType type);
+};  // class ConfigLoader
 
 }  // namespace VeloxServ

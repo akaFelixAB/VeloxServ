@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ConfigManager.hpp"
+#include "ConfigLoader.hpp"
 #include "HttpServer.hpp"
 #include "Logger.hpp"
 
@@ -41,9 +41,8 @@ int main(int argc, char* argv[]) {
     logger.initialize_bootstrap();
 
     try {
-        VeloxServ::ConfigManager config_mgr;
-        config_mgr.parse_file(config_path);
-        const auto& cfg = config_mgr.get_config();
+        VeloxServ::ConfigLoader config_loader;
+        auto cfg = config_loader.load_file(config_path);
 
         // Initialize logging
         logger.initialize(cfg);

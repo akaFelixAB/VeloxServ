@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "ConfigManager.hpp"
+#include "ConfigLoader.hpp"
 #include "HttpTypes.hpp"
 
 #include <boost/asio.hpp>
@@ -73,24 +73,24 @@ private:
     std::shared_ptr<Impl> pimpl_;
 
     // Get the MIME type based on the file extension
-    const std::unordered_map<std::string_view, std::string, StringHash, std::equal_to<>>
+    const std::unordered_map<std::string_view, std::string, StringHash, std::equal_to<>> 
         mime_types = {
-            {".htm", "text/html"},
-            {".html", "text/html"},
-            {".php", "text/html"},
-            {".css", "text/css"},
-            {".txt", "text/plain"},
-            {".js", "application/javascript"},
-            {".json", "application/json"},
-            {".png", "image/png"},
-            {".jpe", "image/jpeg"},
-            {".jpeg", "image/jpeg"},
-            {".jpg", "image/jpeg"},
-            {".gif", "image/gif"},
-            {".bmp", "image/bmp"},
-            {".ico", "image/vnd.microsoft.icon"},
-            {".svg", "image/svg+xml"},
-            {".svgz", "image/svg+xml"}
+        {".htm", "text/html"},
+        {".html", "text/html"},
+        {".php", "text/html"},
+        {".css", "text/css"},
+        {".txt", "text/plain"},
+        {".js", "application/javascript"},
+        {".json", "application/json"},
+        {".png", "image/png"},
+        {".jpe", "image/jpeg"},
+        {".jpeg", "image/jpeg"},
+        {".jpg", "image/jpeg"},
+        {".gif", "image/gif"},
+        {".bmp", "image/bmp"},
+        {".ico", "image/vnd.microsoft.icon"},
+        {".svg", "image/svg+xml"},
+        {".svgz", "image/svg+xml"}
     };
 
     inline beast::string_view mime_type(beast::string_view path) {
@@ -113,15 +113,12 @@ private:
 
     // The core static file handling function
     http::message_generator handle_static_request(
-        const http::request<http::string_body>& req,
-        const std::string& root_dir,
-        const std::string& index_file
+        const http::request<http::string_body>& req, const std::string& root_dir, const std::string& index_file
     );
 
 public:
     // Automatically create a HttpServer on the heap and return a shared_ptr to it
-    HttpServer(net::io_context& ioc, const ServerConfig& config) :
-        pimpl_(std::make_shared<Impl>(ioc, config)) {
+    HttpServer(net::io_context& ioc, const ServerConfig& config) : pimpl_(std::make_shared<Impl>(ioc, config)) {
         load_routes_from_config(config);
     }
 

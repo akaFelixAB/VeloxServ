@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "ConfigManager.hpp"
+#include "ConfigLoader.hpp"
 
 #include <memory>
 

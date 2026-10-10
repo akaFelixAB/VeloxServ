@@ -35,8 +35,7 @@ using json = nlohmann::json;
 
 class JsonFormatter final : public spdlog::formatter {
 public:
-    void
-    format(const spdlog::details::log_msg& message, spdlog::memory_buf_t& destination) override {
+    void format(const spdlog::details::log_msg& message, spdlog::memory_buf_t& destination) override {
         const auto level = spdlog::level::to_string_view(message.level);
         const std::string level_str{level.data(), level.size()};
 

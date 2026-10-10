@@ -42,7 +42,7 @@ target_sources(VeloxServLib
         FILE_SET HEADERS
         BASE_DIRS src
         FILES
-            src/ConfigManager.hpp
+            src/ConfigLoader.hpp
             src/HttpTypes.hpp
             src/ResponseFactory.hpp
             src/HttpServer.hpp
@@ -56,7 +56,7 @@ set_property(TARGET VeloxServLib PROPERTY VERIFY_INTERFACE_HEADER_SETS ON)
 add_executable(VeloxServ src/main.cpp
     src/HttpSession.cpp
     src/HttpServer.cpp
-    src/ConfigManager.cpp
+    src/ConfigLoader.cpp
     src/HttpTypes.hpp
     src/Logger.cpp
     src/ResponseFactory.cpp)
