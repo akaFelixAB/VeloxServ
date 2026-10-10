@@ -20,6 +20,8 @@
 
 #include <spdlog/spdlog.h>
 
+namespace VeloxServ {
+
 void VeloxServ::HttpSession::on_read(boost::system::error_code ec, std::size_t bytes_transferred) {
     if (!ec) {
         process_request();
@@ -102,3 +104,5 @@ void VeloxServ::HttpSession::process_request() {
         }
     );
 }
+
+}  // namespace VeloxServ

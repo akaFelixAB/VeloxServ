@@ -18,7 +18,7 @@ type = "static"
 root = "./public/"
 index = "index.html"
 
-[[routes]]
-path = "/api"
-type = "proxy"
-upstream = "http://127.0.0.1:3000"
+# [[routes]]
+# path = "/api"
+# type = "proxy"
+# upstream = "http://127.0.0.1:3000"

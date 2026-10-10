@@ -14,38 +14,27 @@
 
 #pragma once
 
-#include "ConfigLoader.hpp"
-
-#include <memory>
-
-namespace spdlog {
-class logger;  // NOLINT
-}
+#include <stdexcept>
+#include <string>
+#include <vector>
+#include "ConfigDiagnostic.hpp"
 
 namespace VeloxServ {
 
-class Logger final {
+class ConfigException final : public std::runtime_error {
 public:
-    Logger() = default;
-    ~Logger();
+    explicit ConfigException(std::vector<ConfigDiagnostic> diagnostics);
 
-    Logger(const Logger&) = delete;
-    Logger& operator=(const Logger&) = delete;
-
-    Logger(Logger&&) = delete;
-    Logger& operator=(Logger&&) = delete;
-
-    void initialize_bootstrap();
-    void initialize(const ServerConfig& config);
-    void shutdown();
-
-    [[nodiscard]] bool is_initialized() const noexcept {
-        return initialized_;
+    [[nodiscard]] const std::vector<ConfigDiagnostic>& diagnostics() const noexcept {
+        return diagnostics_;
     }
 
 private:
-    std::shared_ptr<spdlog::logger> logger_;
-    bool initialized_ = false;
+    static std::string format_message(
+        const std::vector<ConfigDiagnostic>& diagnostics
+    );
+
+    std::vector<ConfigDiagnostic> diagnostics_;
 };
 
 }  // namespace VeloxServ

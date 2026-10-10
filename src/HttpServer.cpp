@@ -21,7 +21,9 @@
 
 #include <filesystem>
 
-VeloxServ::http::message_generator VeloxServ::HttpServer::handle_static_request(
+namespace VeloxServ {
+
+http::message_generator HttpServer::handle_static_request(
     const http::request<http::string_body>& req,
     const std::string& root_dir,
     const std::string& index_file
@@ -121,30 +123,31 @@ VeloxServ::http::message_generator VeloxServ::HttpServer::handle_static_request(
     return res;
 }
 
-void VeloxServ::HttpServer::load_routes_from_config(const ServerConfig& config) {
+void HttpServer::load_routes_from_config(const ServerConfig& config) {
     spdlog::info("Loading routes from configuration");
     for (const auto& r : config.routes_) {
         spdlog::info("Loading route: {}", r.path_);
-        if (r.type_ == "static") {
+        if (r.type_ == RouteType::Static) {
             // Register a static file handler for the route
             pimpl_->route(r.path_, [this, r](const http::request<http::string_body>& req) {
                 return handle_static_request(req, r.root_, r.index_);
             });
-        } else if (r.type_ == "proxy") {
+        } else if (r.type_ == RouteType::Proxy) {
             // Register a proxy handler for the route
+            spdlog::warn("Proxy route handling is not implemented yet");
         }
     }
 }
 
-void VeloxServ::HttpServer::Impl::on_accept(boost::system::error_code ec, tcp::socket socket) {
+void HttpServer::Impl::on_accept(boost::system::error_code ec, tcp::socket socket) {
     if (!ec) {
-        std::make_shared<VeloxServ::HttpSession>(std::move(socket), routes_)->start();
+        std::make_shared<HttpSession>(std::move(socket), routes_)->start();
     }
     accept_request();
     spdlog::info("New connection accepted");
 }
 
-void VeloxServ::HttpServer::Impl::accept_request() {
+void HttpServer::Impl::accept_request() {
     acceptor_.async_accept(
         beast::bind_front_handler(
             &Impl::on_accept,
@@ -152,3 +155,5 @@ void VeloxServ::HttpServer::Impl::accept_request() {
         )
     );
 }
+
+}  // namespace VeloxServ

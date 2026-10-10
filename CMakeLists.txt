@@ -32,41 +32,42 @@ find_package(Boost REQUIRED COMPONENTS asio beast url)
 find_package(tomlplusplus REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(spdlog REQUIRED)
+find_package(Catch2 REQUIRED)
 
 set(CMAKE_EXPORT_NO_PACKAGE_REGISTRY ON)
 set(CMAKE_NO_SYSTEM_FROM_IMPORTED ON) 
 
-add_library(VeloxServLib INTERFACE)
-target_sources(VeloxServLib
-    INTERFACE
-        FILE_SET HEADERS
-        BASE_DIRS src
-        FILES
-            src/ConfigManager.hpp
-            src/HttpTypes.hpp
-            src/ResponseFactory.hpp
-            src/HttpServer.hpp
-            src/HttpSession.hpp
-            src/Logger.hpp
-)
-# Enable interface header set verification to ensure that all headers
-# are correctly included in the target's interface
-set_property(TARGET VeloxServLib PROPERTY VERIFY_INTERFACE_HEADER_SETS ON)
-
-add_executable(VeloxServ src/main.cpp
-    src/HttpSession.cpp
+# Build Targets
+add_library(VeloxServCore STATIC
+    src/ConfigLoader.cpp
+    src/ConfigValidator.cpp
+    src/ConfigException.cpp
+    src/ResponseFactory.cpp
     src/HttpServer.cpp
-    src/ConfigManager.cpp
-    src/HttpTypes.hpp
+    src/HttpSession.cpp
     src/Logger.cpp
-    src/ResponseFactory.cpp)
-target_link_libraries(VeloxServ PRIVATE 
-    Boost::asio 
+)
+
+target_link_libraries(VeloxServCore PUBLIC 
+    Boost::asio
     Boost::beast
     Boost::url
     tomlplusplus::tomlplusplus
     nlohmann_json::nlohmann_json
-    spdlog::spdlog)
+    spdlog::spdlog
+)
+
+add_library(VeloxServ::Core ALIAS VeloxServCore)
+
+target_include_directories(VeloxServCore PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+add_executable(VeloxServ src/main.cpp)
+
+target_link_libraries(VeloxServ PRIVATE
+    VeloxServ::Core
+)
 
 # Testing
 include(CTest)
@@ -89,6 +90,16 @@ set_tests_properties(
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         TIMEOUT 30
 )
+
+# Unit Tests
+file(GLOB_RECURSE TEST_SOURCES "tests/*.cpp")
+add_executable(unit_tests ${TEST_SOURCES})
+
+target_link_libraries(unit_tests PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(unit_tests PRIVATE VeloxServCore)
+
+include(Catch)
+catch_discover_tests(unit_tests)
 
 # if(WIN32)
 #     # Windows 

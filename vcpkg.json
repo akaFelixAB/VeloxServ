@@ -5,6 +5,7 @@
     "nlohmann-json",
     "spdlog",
     "tomlplusplus",
-    "boost-url"
+    "boost-url",
+    "catch2"
   ]
 }
