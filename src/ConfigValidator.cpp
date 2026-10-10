@@ -14,6 +14,8 @@
 
 #include "ConfigValidator.hpp"
 
+#include <boost/asio.hpp>
+
 #include <filesystem>
 
 namespace VeloxServ {
@@ -31,6 +33,18 @@ void add_error(
     });
 }
 
+bool is_valid_ip_address(std::string_view host) {
+    if (host.empty()) {
+        return false;
+    }
+
+    boost::system::error_code error;
+    const auto address =
+        boost::asio::ip::make_address(host, error);
+
+    return !error.failed();
+}
+
 }  // namespace
 
 std::vector<ConfigDiagnostic> ConfigValidator::validate(
@@ -43,6 +57,14 @@ std::vector<ConfigDiagnostic> ConfigValidator::validate(
             errors,
             "server.host",
             "must not be empty"
+        );
+    }
+
+    if (!is_valid_ip_address(config.host_)) {
+        add_error(
+            errors,
+            "server.host",
+            "must be a valid IP address"
         );
     }
 
@@ -106,17 +128,25 @@ std::vector<ConfigDiagnostic> ConfigValidator::validate(
             }
             break;
 
-        case RouteType::Proxy: // Not implemented yet
-        //     add_error(
-        //         errors,
-        //         prefix + ".type",
-        //         "route type \"proxy\" is not implemented"
-        //     );
+        case RouteType::Proxy:  // Not implemented yet
+            add_error(          // Add a diagnostic for the unimplemented proxy route
+                errors,
+                prefix + ".type",
+                "route type \"proxy\" is not implemented"
+            );
             if (route.upstream_.empty()) {
                 add_error(
                     errors,
                     prefix + ".upstream",
                     "must not be empty for proxy routes"
+                );
+            }
+
+            if (!is_valid_ip_address(route.upstream_)) {
+                add_error(
+                    errors,
+                    prefix + ".upstream",
+                    "must be a valid IP address"
                 );
             }
             break;
