@@ -35,6 +35,10 @@ int main(int argc, char* argv[]) {
 
     std::string config_path = "default.toml";
 
+    if (argc > 1) {
+        config_path = argv[1];
+    }
+
     // Logger instance for logging throughout the application
     VeloxServ::Logger logger;
     // Initialize bootstrap logging for early startup messages
